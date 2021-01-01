@@ -10,15 +10,15 @@ import (
 )
 
 
-type procdata struct {
-	name string
-	cores map[string]string
+type CPUdata struct {
+	Name string
+	Cores map[string]string
 }
 
 
 // Cpuinfo scans the file /proc/cpuinfo and extracts values for the
 // cpu name and the current speed of every core
-func Cpuinfo() procdata {
+func Cpuinfo() CPUdata {
 	procs := map[string]string{}
 	procname := ""
 	procnum := ""
@@ -44,7 +44,7 @@ func Cpuinfo() procdata {
 			procs[procnum] = line[3]
 		}
 	}
-	return procdata{name: procname, cores: procs}
+	return CPUdata{Name: procname, Cores: procs}
 }
 
 // Meminfo scans the file /proc/meminfo and extracts the values for
@@ -80,11 +80,11 @@ func Meminfo() [2]int {
 }
 
 
-// Temp scans the /sys/class/hwmon tree, looking for a hwmonX
+// Tempinfo scans the /sys/class/hwmon tree, looking for a hwmonX
 // subtree with a name of 'k10temp'. It then examines the temp* files
 // until it finds the one labelled 'Tdie', and checks its matching
 // input to get the current CPU temperature (in millidegrees C)
-func Temp() int {
+func Tempinfo() int {
 	return 0
 }
 

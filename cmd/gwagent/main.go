@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"../../internal/hwmon"
+	"github.com/firepear/gnatwren/internal/hwmon"
 )
 
 func main() {
