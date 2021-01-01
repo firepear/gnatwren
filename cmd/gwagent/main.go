@@ -18,7 +18,7 @@ type procdata struct {
 
 
 // gw_cpuingo scans the file /proc/cpuinfo and extracts values for the
-// cpu name, the current speed of every core
+// cpu name and the current speed of every core
 func gw_cpuinfo() procdata {
 	procs := map[string]string{}
 	procname := ""
@@ -80,25 +80,35 @@ func gw_meminfo() [2]int {
 	return [2]int{memtotal, memavail}
 }
 
-func gw_uptime() [4]int {
+
+// gw_temp scans the /sys/class/hwmon tree, looking for a hwmonX
+// subtree with a name of 'k10temp'. It then examines the temp* files
+// until it finds the one labelled 'Tdie', and checks its matching
+// input to get the current CPU temperature (in millidegrees C)
+func gw_temp() int {
+}
+
+
+// gw_uptime reports the uptime count from /proc/uptime
+func gw_uptime() int {
 	content, err := ioutil.ReadFile("/proc/uptime")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	chunk, err := strconv.ParseFloat(strings.Fields(string(content))[0], 64)
+	uptime, err := strconv.ParseFloat(strings.Fields(string(content))[0], 64)
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
-	uptime := int(chunk)
+	return int(uptime)
 
-	d :=  uptime / 86400
-	uptime = uptime - (86400 * d)
-	h := uptime / 3600
-	uptime = uptime - (3600 * h)
-	m := uptime / 60
-	s := uptime - (60 * m)
-	return [4]int{d, h, m, s}
+	//d :=  uptime / 86400
+	//uptime = uptime - (86400 * d)
+	//h := uptime / 3600
+	//uptime = uptime - (3600 * h)
+	//m := uptime / 60
+	//s := uptime - (60 * m)
+	//return [4]int{d, h, m, s}
 }
 
 
@@ -106,7 +116,7 @@ func main() {
 	x := gw_meminfo()
 	fmt.Printf("Total memory: %5.2fG\n", float64(x[0])/1024/1024)
 	fmt.Printf("Available   : %5.2f%%\n", float64(x[1])/float64(x[0])*100)
-	y := gw_uptime()
-	fmt.Printf("Uptime      : %dd %d:%d:%d\n", y[0], y[1], y[2], y[3])
+	fmt.Println(gw_uptime())
+	//fmt.Printf("Uptime      : %dd %02d:%02d:%02d\n", y[0], y[1], y[2], y[3])
 	fmt.Println(gw_cpuinfo())
 }
