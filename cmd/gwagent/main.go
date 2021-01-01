@@ -11,6 +11,43 @@ import (
 )
 
 
+type procdata struct {
+	name string
+	cores map[string]string
+}
+
+
+// gw_cpuingo scans the file /proc/cpuinfo and extracts values for the
+// cpu name, the current speed of every core
+func gw_cpuinfo() procdata {
+	procs := map[string]string{}
+	procname := ""
+	procnum := ""
+
+	file, err := os.Open("/proc/cpuinfo")
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.Fields(scanner.Text())
+		if len(line) == 0 {
+			continue
+		}
+
+		if line[0] == "processor" {
+			procnum = line[2]
+		} else if line[0] == "model" && line[1] == "name" {
+			procname = strings.Join(line[3:], " ")
+		} else if line[1] == "MHz" {
+			procs[procnum] = line[3]
+		}
+	}
+	return procdata{name: procname, cores: procs}
+}
+
 // gw_meminfo scans the file /proc/meminfo and extracts the values for
 // total and available memory, in kilobytes, and returns them in that
 // order.
@@ -71,4 +108,5 @@ func main() {
 	fmt.Printf("Available   : %5.2f%%\n", float64(x[1])/float64(x[0])*100)
 	y := gw_uptime()
 	fmt.Printf("Uptime      : %dd %d:%d:%d\n", y[0], y[1], y[2], y[3])
+	fmt.Println(gw_cpuinfo())
 }
