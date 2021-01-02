@@ -14,7 +14,7 @@ import (
 )
 
 
-// Cpuinfo scans the file /proc/cpuinfo and extracts values for the
+// Cpuinfo scans /proc/cpuinfo and extracts values for the
 // cpu name, Tdie temp, and the current speed of every core
 func Cpuinfo() data.CPUdata {
 	procs := map[string]string{}
@@ -42,8 +42,38 @@ func Cpuinfo() data.CPUdata {
 			procs[procnum] = line[3]
 		}
 	}
+	if len(procs) == 0 {
+		procs = CpuinfoSysfs()
+	}
+
 	temp := Tempinfo()
 	return data.CPUdata{Name: procname, Temp: (float64(temp) / 1000), Cores: procs}
+}
+
+// CpuinfoSysfs is the fallback function for gathering core speeds. It
+// examines the /sys/devices/system/cpu/ subtree of sysfs
+func CpuinfoSysfs() map[string]string {
+	err := os.Chdir("/sys/devices/system/cpu")
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+
+	procs := map[string]string{}
+	cpus, _ := filepath.Glob("cpu[0-9]*")
+	for _, cpu := range cpus {
+		// get just the number, to match Cpuinfo's naming
+		cpunum := strings.Replace(cpu, "cpu", "", 1)
+		// build a path to the freq file and slurp it
+		path := fmt.Sprintf("/sys/devices/system/cpu/%s/cpufreq/scaling_cur_freq", cpu)
+		freqb, err := ioutil.ReadFile(path)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// convert to match Cpuinfo's format
+		freqi, _ := strconv.Atoi(strings.TrimSpace(string(freqb)))
+		procs[cpunum] = fmt.Sprintf("%8.3f", (float64(freqi) / 1000))
+	}
+	return procs
 }
 
 // Meminfo scans the file /proc/meminfo and extracts the values for
@@ -80,10 +110,11 @@ func Meminfo() [2]int {
 
 
 // Tempinfo scans the /sys/class/hwmon tree, looking for a hwmonX
-// subtree with a name of 'k10temp'. It then examines the temp* files
-// until it finds the one labelled 'Tdie', and checks its matching
-// input to get the current CPU temperature (in millidegrees
-// C). Returns -1 if no CPU temp can be found.
+// subtree with a name of 'k10temp' (AMD) or 'cpu_thermal' (Raspberry
+// Pi). It then examines the temp* files until it finds the one
+// labelled 'Tdie', and checks its matching input to get the current
+// CPU temperature (in millidegrees C). Returns -1 if no CPU temp can
+// be found.
 func Tempinfo() int {
 	cputemp := -1
 
@@ -112,42 +143,54 @@ func Tempinfo() int {
 		if err != nil {
 			log.Fatal(err)
 		}
-		// we're only interested in "k10temp"
-		if string(name) != "k10temp\n" {
-			continue
-		}
-		// found it. build a list of the available temp data
-		// source labels
-		glob := fmt.Sprintf("/sys/class/hwmon/%s/temp?_label", hwmon)
-		temps, err := filepath.Glob(glob)
-		if len(temps) == 0 {
-			return cputemp
-		}
-		// and look at each of them
-		for _, temp := range temps {
-			label, err := ioutil.ReadFile(temp)
+		if string(name) == "k10temp\n" {
+			// we're only interested in "k10temp" on AMD
+			// CPUs. build a list of the available temp
+			// data source labels
+			glob := fmt.Sprintf("/sys/class/hwmon/%s/temp?_label", hwmon)
+			temps, _ := filepath.Glob(glob)
+			if len(temps) == 0 {
+				return cputemp
+			}
+			// and look at each of them
+			for _, temp := range temps {
+				label, err := ioutil.ReadFile(temp)
+				if err != nil {
+					log.Fatal(err)
+				}
+				labelstr := string(label)
+				// we're only interested in the Tdie reading
+				if labelstr != "Tdie\n" {
+					continue
+				}
+				// when we find it, edit our path to point at
+				// the temperature source value, and read it
+				value, err := ioutil.ReadFile(strings.Replace(temp, "label", "input", 1))
+				if err != nil {
+					log.Fatal(err)
+				}
+				// it's []byte, so convert it to string, strip
+				// the newline, and convert that to an
+				// integer, which we will return
+				cputemp, err = strconv.Atoi(strings.TrimSpace(string(value)))
+				if err != nil {
+					log.Fatal(err)
+				}
+				break
+			}
+		} else if string(name) == "cpu_thermal\n" {
+			// Or 'cpu_thermal' on ARM. RPi doesn't have
+			// labels, and there appears to only be one
+			// input under the cpu_thermal entry. read it
+			// and handle as above
+			value, err := ioutil.ReadFile(fmt.Sprintf("/sys/class/hwmon/%s/temp1_input", hwmon))
 			if err != nil {
 				log.Fatal(err)
 			}
-			labelstr := string(label)
-			// we're only interested in the Tdie reading
-			if labelstr != "Tdie\n" {
-				continue
-			}
-			// when we find it, edit our path to point at
-			// the temperature source value, and read it
-			value, err := ioutil.ReadFile(strings.Replace(temp, "label", "input", 1))
-			if err != nil {
-				log.Fatal(err)
-			}
-			// it's []byte, so convert it to string, strip
-			// the newline, and convert that to an
-			// integer, which we will return
 			cputemp, err = strconv.Atoi(strings.TrimSpace(string(value)))
 			if err != nil {
 				log.Fatal(err)
 			}
-			break
 		}
 	}
 	return cputemp
