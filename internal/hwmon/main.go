@@ -2,9 +2,11 @@ package hwmon
 
 import (
 	"bufio"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -13,7 +15,7 @@ import (
 
 
 // Cpuinfo scans the file /proc/cpuinfo and extracts values for the
-// cpu name and the current speed of every core
+// cpu name, Tdie temp, and the current speed of every core
 func Cpuinfo() data.CPUdata {
 	procs := map[string]string{}
 	procname := ""
@@ -40,7 +42,8 @@ func Cpuinfo() data.CPUdata {
 			procs[procnum] = line[3]
 		}
 	}
-	return data.CPUdata{Name: procname, Cores: procs}
+	temp := Tempinfo()
+	return data.CPUdata{Name: procname, Temp: (float64(temp) / 1000), Cores: procs}
 }
 
 // Meminfo scans the file /proc/meminfo and extracts the values for
@@ -79,9 +82,61 @@ func Meminfo() [2]int {
 // Tempinfo scans the /sys/class/hwmon tree, looking for a hwmonX
 // subtree with a name of 'k10temp'. It then examines the temp* files
 // until it finds the one labelled 'Tdie', and checks its matching
-// input to get the current CPU temperature (in millidegrees C)
+// input to get the current CPU temperature (in millidegrees
+// C). Returns -1 if no CPU temp can be found.
 func Tempinfo() int {
-	return 0
+	cputemp := -1
+
+	err := os.Chdir("/sys/class/hwmon")
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+
+	hwmons, err := filepath.Glob("hwmon*")
+	if len(hwmons) == 0 {
+		return cputemp
+	}
+
+	for _, hwmon := range hwmons {
+		if cputemp != -1 {
+			break
+		}
+
+		path := fmt.Sprintf("/sys/class/hwmon/%s/name", hwmon)
+		name, err := ioutil.ReadFile(path)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if string(name) != "k10temp\n" {
+			continue
+		}
+		glob := fmt.Sprintf("/sys/class/hwmon/%s/temp?_label", hwmon)
+		temps, err := filepath.Glob(glob)
+		if len(temps) == 0 {
+			return cputemp
+		}
+
+		for _, temp := range temps {
+			label, err := ioutil.ReadFile(temp)
+			if err != nil {
+				log.Fatal(err)
+			}
+			labelstr := string(label)
+			if labelstr != "Tdie\n" {
+				continue
+			}
+			value, err := ioutil.ReadFile(strings.Replace(temp, "label", "input", 1))
+			if err != nil {
+				log.Fatal(err)
+			}
+			cputemp, err = strconv.Atoi(strings.TrimSpace(string(value)))
+			if err != nil {
+				log.Fatal(err)
+			}
+			break
+		}
+	}
+	return cputemp
 }
 
 

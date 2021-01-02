@@ -6,4 +6,5 @@ package data
 type CPUdata struct {
 	Name string
 	Cores map[string]string
+	Temp float64
 }
