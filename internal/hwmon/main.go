@@ -7,18 +7,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/firepear/gnatwren/internal/data"
 )
-
-
-type CPUdata struct {
-	Name string
-	Cores map[string]string
-}
 
 
 // Cpuinfo scans the file /proc/cpuinfo and extracts values for the
 // cpu name and the current speed of every core
-func Cpuinfo() CPUdata {
+func Cpuinfo() data.CPUdata {
 	procs := map[string]string{}
 	procname := ""
 	procnum := ""
@@ -44,7 +40,7 @@ func Cpuinfo() CPUdata {
 			procs[procnum] = line[3]
 		}
 	}
-	return CPUdata{Name: procname, Cores: procs}
+	return data.CPUdata{Name: procname, Cores: procs}
 }
 
 // Meminfo scans the file /proc/meminfo and extracts the values for

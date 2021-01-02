@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/firepear/gnatwren/internal/hwmon"
 )
 
