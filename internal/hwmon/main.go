@@ -87,48 +87,62 @@ func Meminfo() [2]int {
 func Tempinfo() int {
 	cputemp := -1
 
+	// cd to the top of the tree
 	err := os.Chdir("/sys/class/hwmon")
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
-
+	// get a list of all hwmon dirs/symlinks
 	hwmons, err := filepath.Glob("hwmon*")
 	if len(hwmons) == 0 {
 		return cputemp
 	}
 
 	for _, hwmon := range hwmons {
+		// if cputemp has been set, then we found what we're
+		// looking for and we're done
 		if cputemp != -1 {
 			break
 		}
 
+		// otherwise, build a path to the 'name' file in the
+		// current hwmon dir and read its contents
 		path := fmt.Sprintf("/sys/class/hwmon/%s/name", hwmon)
 		name, err := ioutil.ReadFile(path)
 		if err != nil {
 			log.Fatal(err)
 		}
+		// we're only interested in "k10temp"
 		if string(name) != "k10temp\n" {
 			continue
 		}
+		// found it. build a list of the available temp data
+		// source labels
 		glob := fmt.Sprintf("/sys/class/hwmon/%s/temp?_label", hwmon)
 		temps, err := filepath.Glob(glob)
 		if len(temps) == 0 {
 			return cputemp
 		}
-
+		// and look at each of them
 		for _, temp := range temps {
 			label, err := ioutil.ReadFile(temp)
 			if err != nil {
 				log.Fatal(err)
 			}
 			labelstr := string(label)
+			// we're only interested in the Tdie reading
 			if labelstr != "Tdie\n" {
 				continue
 			}
+			// when we find it, edit our path to point at
+			// the temperature source value, and read it
 			value, err := ioutil.ReadFile(strings.Replace(temp, "label", "input", 1))
 			if err != nil {
 				log.Fatal(err)
 			}
+			// it's []byte, so convert it to string, strip
+			// the newline, and convert that to an
+			// integer, which we will return
 			cputemp, err = strconv.Atoi(strings.TrimSpace(string(value)))
 			if err != nil {
 				log.Fatal(err)
