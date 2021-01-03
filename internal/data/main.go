@@ -14,5 +14,6 @@ type CPUdata struct {
 type AgentPayload struct {
 	Cpu CPUdata
 	Mem [2]int
+	Ldavg [3]string
 	Upt string
 }

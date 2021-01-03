@@ -44,6 +44,7 @@ func gatherMetrics(args [][]byte) ([]byte, error) {
 
 	metrics.Cpu = hwmon.Cpuinfo()
 	metrics.Mem = hwmon.Meminfo()
+	metrics.Ldavg = hwmon.Loadinfo()
 	metrics.Upt = hwmon.Uptime()
 
 	return json.Marshal(metrics)

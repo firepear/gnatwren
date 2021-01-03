@@ -76,6 +76,15 @@ func CpuinfoSysfs() map[string]string {
 	return procs
 }
 
+func Loadinfo() [3]string {
+	loadavg_b, err := ioutil.ReadFile("/proc/loadavg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	loadavg := strings.Fields(string(loadavg_b))
+	return [3]string{loadavg[0], loadavg[1], loadavg[2]}
+}
+
 // Meminfo scans the file /proc/meminfo and extracts the values for
 // total and available memory, in kilobytes, and returns them in that
 // order.
