@@ -1,7 +1,7 @@
 0.1.0 - 2021-01-02
 --------------------------------------------------------------------
 
-    * "MVP"/testbed implmentation; final design will work in a
+    * Pathfinder/demo implmentation; production design will work in a
       completely different way
 
     * Agent: memory, uptime, cpu clocks and temp gathering on AMD

@@ -1,7 +1,6 @@
 # gnatwren
 A lightweight machine metric collection and aggregation system
 
-
 ## Information gathered
 
 Implemented for x86 and Raspberry Pi:
