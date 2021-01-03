@@ -1,5 +1,7 @@
 # gnatwren
-A lightweight machine metric collection and aggregation system
+The trilling gnatwren (_Ramphocaenus melanurus_) is a very small bird
+in the gnatcatcher family. This software aims to be a very small fleet
+metrics and health system.
 
 ## Information gathered
 
