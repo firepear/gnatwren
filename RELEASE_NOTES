@@ -1,0 +1,13 @@
+0.1.0 - 2021-01-02
+--------------------------------------------------------------------
+
+    * "MVP"/testbed implmentation; final design will work in a
+      completely different way
+
+    * Agent: memory, uptime, cpu clocks and temp gathering on AMD
+      Ryzen and Raspberry Pi. Uses only /proc and /sys data; no calls
+      to external processes; no third-party golang deps
+
+    * Query: simple, static, "on my machine" only implementation. Can
+      gather metrics from all machines in 0.14 seconds
+

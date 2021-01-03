@@ -198,23 +198,12 @@ func Tempinfo() int {
 
 
 // Uptime reports the uptime count from /proc/uptime
-func Uptime() int {
+func Uptime() string {
 	content, err := ioutil.ReadFile("/proc/uptime")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	uptime, err := strconv.ParseFloat(strings.Fields(string(content))[0], 64)
-	if err != nil {
-		log.Fatalf("%v", err)
-	}
-	return int(uptime)
-
-	//d :=  uptime / 86400
-	//uptime = uptime - (86400 * d)
-	//h := uptime / 3600
-	//uptime = uptime - (3600 * h)
-	//m := uptime / 60
-	//s := uptime - (60 * m)
-	//return [4]int{d, h, m, s}
+	uptime := strings.Fields(string(content))[0]
+	return uptime
 }

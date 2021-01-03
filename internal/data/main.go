@@ -8,3 +8,11 @@ type CPUdata struct {
 	Cores map[string]string
 	Temp float64
 }
+
+
+// AgentPayload represents one sample, as collected by gwagent.
+type AgentPayload struct {
+	Cpu CPUdata
+	Mem [2]int
+	Upt string
+}

@@ -1,0 +1,4 @@
+github.com/firepear/petrel v0.31.0 h1:C+xYIwkwh6BZLZzST+S3YKkS+h6uAK37rQZv0VETcdA=
+github.com/firepear/petrel v0.31.0/go.mod h1:UZu1mg6ShOss4v2iv3DiEt1Sp1S32dl6ecXXbixDYtk=
+github.com/firepear/qsplit/v2 v2.3.0 h1:tfpC7K6TpxgwlEmpD37eqQ+iiGEycePdkZpKtA8MvxI=
+github.com/firepear/qsplit/v2 v2.3.0/go.mod h1:Q65ZpyUdvAUkXISeeNtA3DPlDwEn9mHU/kzTtPUxmKQ=
