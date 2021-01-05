@@ -71,8 +71,11 @@ func main() {
 		s := uptime - m * 60
 
 		fmt.Printf("%s\t%d threads\tTemp: %05.2fC\n", metrics.Cpu.Name, len(metrics.Cpu.Cores), metrics.Cpu.Temp)
-		fmt.Printf("\tAvg / Max / Min clocks: %d / %d / %d MHz\n", avgcore, maxcore, mincore)
-		fmt.Printf("\tMemory: %05.2fGB (%05.2f%% avail)\n", float64(metrics.Mem[0]) / 1024.0 / 1024.0, (float64(metrics.Mem[1]) / float64(metrics.Mem[0]) * 100))
+		fmt.Printf("\tClocks (min/max/avg): %d / %d / %d MHz\n", mincore, maxcore, avgcore)
+		fmt.Printf("\tMemory: %05.2fGB; %05.2f%% free; %05.2f%% available\n",
+			float64(metrics.Mem[0]) / 1024.0 / 1024.0,
+			(float64(metrics.Mem[1]) / float64(metrics.Mem[0]) * 100),
+			(float64(metrics.Mem[2]) / float64(metrics.Mem[0]) * 100))
 		fmt.Printf("\tUptime: %dd %02d:%02d:%02d\tLoadavg: %s %s %s\n\n", int(d), int(h), int(m), int(s), metrics.Ldavg[0], metrics.Ldavg[1], metrics.Ldavg[2], )
 	}
 }

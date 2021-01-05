@@ -88,10 +88,9 @@ func Loadinfo() [3]string {
 // Meminfo scans the file /proc/meminfo and extracts the values for
 // total and available memory, in kilobytes, and returns them in that
 // order.
-func Meminfo() [2]int {
+func Meminfo() [3]int {
 	found := 0
-	memtotal := 0
-	memavail := 0
+	memdata := [3]int{}
 
 	file, err := os.Open("/proc/meminfo")
 	if err != nil {
@@ -101,20 +100,23 @@ func Meminfo() [2]int {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if found == 2 {
+		if found == 3 {
 			break
 		}
 
 		line := strings.Fields(scanner.Text())
 		if line[0] == "MemTotal:" {
-			memtotal, err = strconv.Atoi(line[1])
+			memdata[0], err = strconv.Atoi(line[1])
+			found += 1
+		} else if line[0] == "MemFree:" {
+			memdata[1], err = strconv.Atoi(line[1])
 			found += 1
 		} else if line[0] == "MemAvailable:" {
-			memavail, err = strconv.Atoi(line[1])
+			memdata[2], err = strconv.Atoi(line[1])
 			found += 1
 		}
 	}
-	return [2]int{memtotal, memavail}
+	return memdata
 }
 
 

@@ -13,7 +13,7 @@ type CPUdata struct {
 // AgentPayload represents one sample, as collected by gwagent.
 type AgentPayload struct {
 	Cpu CPUdata
-	Mem [2]int
+	Mem [3]int
 	Ldavg [3]string
 	Upt string
 }
