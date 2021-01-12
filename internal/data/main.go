@@ -10,6 +10,11 @@ type CPUdata struct {
 }
 
 
+type AgentConfig struct {
+	Socket string `json: "socket"`
+}
+
+
 // AgentPayload represents one sample, as collected by gwagent.
 type AgentPayload struct {
 	Cpu CPUdata

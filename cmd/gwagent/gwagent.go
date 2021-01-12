@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -52,8 +53,21 @@ func gatherMetrics(args [][]byte) ([]byte, error) {
 
 
 func main() {
-	var socket = flag.String("socket", "localhost:11099", "Addr:port to bind the socket to")
+	// find out where the gwagent config file is and read it in
+	var configfile string
+	flag.StringVar(&configfile, "config", "/etc/gnatwren/agent.json", "Location of the gwagent config file")
 	flag.Parse()
+
+	config := data.AgentConfig{}
+	content, err := ioutil.ReadFile(configfile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = json.Unmarshal(content, &config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
@@ -61,7 +75,7 @@ func main() {
 
 	// configure the petrel server
 	c := &petrel.ServerConfig{
-                Sockname: *socket,
+                Sockname: config.Socket,
                 Msglvl: petrel.All,
 		Timeout: 5,
         }
