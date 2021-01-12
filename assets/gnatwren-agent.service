@@ -1,0 +1,11 @@
+[Unit]
+Description=Gnatwren metrics and monitoring agent
+After=network-online.target
+
+[Service]
+Type=simple
+User=nobody
+ExecStart=/usr/bin/gwagent --config=/etc/gnatwren/agent.json
+
+[Install]
+WantedBy=multi-user.target
