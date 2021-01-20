@@ -1,3 +1,4 @@
 {
-    "gatheraddr": "0.0.0.0:11099"
+    "gather": "0.0.0.0:11099",
+    "active": true
 }
