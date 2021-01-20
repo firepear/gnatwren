@@ -11,7 +11,12 @@ type CPUdata struct {
 
 
 type AgentConfig struct {
-	Socket string `json: "socket"`
+	Gather string `json: "gather"`
+	Active bool  `json: "active"`
+}
+
+type GatherConfig struct {
+	Bind string `json: "bind"`
 }
 
 
