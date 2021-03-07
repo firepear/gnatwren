@@ -16,6 +16,10 @@ import (
 	"github.com/firepear/gnatwren/internal/data"
 )
 
+
+var req = []byte("agentupdate ")
+
+
 func gatherMetrics() ([]byte, error) {
 	metrics := data.AgentPayload{}
 
@@ -26,6 +30,22 @@ func gatherMetrics() ([]byte, error) {
 	metrics.Upt = hwmon.Uptime()
 
 	return json.Marshal(metrics)
+}
+
+func sendMetrics(pc *petrel.ClientConfig) {
+	// TODO: don't die on errors, but store for later
+	log.Printf("Sending data to Gather\n")
+	sample, err := gatherMetrics()
+	c, err := petrel.TCPClient(pc)
+	if err != nil {
+		log.Fatalf("can't initialize client: %s\n", err)
+	}
+	defer c.Quit()
+
+	_, err = c.Dispatch(append(req, sample...))
+	if err != nil {
+		log.Fatalf("did not get successful response: %s\n", err)
+	}
 }
 
 
@@ -47,7 +67,6 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	intlen := len(config.Intervals)
 	// and the request we'll be making
-	req := []byte("agentupdate ")
 
 
         // set up client configuration and create client instance
@@ -67,17 +86,7 @@ func main() {
                         // that many seconds in the future. if the
                         // event arrives, then we're still alive and
                         // we should report in.
-                        log.Printf("Sending data to Gather\n")
-			sample, err := gatherMetrics()
-			c, err := petrel.TCPClient(pconf)
-			if err != nil {
-				log.Fatalf("can't initialize client: %s\n", err)
-			}
-			_, err = c.Dispatch(append(req, sample...))
-			if err != nil {
-				log.Fatalf("did not get successful response: %s\n", err)
-			}
-			c.Quit()
+			sendMetrics(pconf)
                 case <-sigchan:
                         // we've trapped a signal from the OS. set
                         // keepalive to false and break out of our
