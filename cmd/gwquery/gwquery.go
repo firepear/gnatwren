@@ -54,7 +54,7 @@ func main() {
 
 	for _, hostname := range hosts  {
 		hostdata := metrics[hostname]
-		fmt.Printf("%s  %||  s (%d threads)\n", hostname, hostdata.Cpu.Name, len(hostdata.Cpu.Cores))
+		fmt.Printf("%s  ||  %s (%d threads)\n", hostname, hostdata.Cpu.Name, len(hostdata.Cpu.Cores))
 		mincore, maxcore, avgcore, coretot := 0, 0, 0, 0
 		for _, core := range hostdata.Cpu.Cores {
 			clock_f, _ := strconv.ParseFloat(core, 64)
@@ -78,12 +78,12 @@ func main() {
 		s := uptime - m * 60
 		ts := time.Unix(hostdata.TS, 0).Format("2 Jan 15:04:05")
 
+		fmt.Printf("  Up %dd %02d:%02d:%02d  ||  Ldavg %s %s %s  ||  %s\n", int(d), int(h), int(m), int(s),
+			hostdata.Ldavg[0], hostdata.Ldavg[1], hostdata.Ldavg[2], ts)
 		fmt.Printf("  Min/max/avg %d / %d / %d MHz  ||  Temp %05.2fC\n", mincore, maxcore, avgcore, hostdata.Cpu.Temp)
-		fmt.Printf("  Mem tot/free/avail %05.2fGB / %05.2f%% / %05.2f%%\n",
+		fmt.Printf("  Mem tot/free/avail %05.2fGB / %05.2f%% / %05.2f%%\n\n",
 			float64(hostdata.Mem[0]) / 1024.0 / 1024.0,
 			(float64(hostdata.Mem[1]) / float64(hostdata.Mem[0]) * 100),
 			(float64(hostdata.Mem[2]) / float64(hostdata.Mem[0]) * 100))
-		fmt.Printf("  Upt %dd %02d:%02d:%02d  ||  Ldavg %s %s %s  ||  Ts %s\n\n", int(d), int(h), int(m), int(s),
-			hostdata.Ldavg[0], hostdata.Ldavg[1], hostdata.Ldavg[2], ts)
 	}
 }
