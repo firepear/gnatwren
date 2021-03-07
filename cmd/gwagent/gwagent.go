@@ -24,6 +24,7 @@ func gatherMetrics() ([]byte, error) {
 	metrics := data.AgentPayload{}
 
 	metrics.Host, _ = os.Hostname()
+	metrics.TS = time.Now().Unix()
 	metrics.Cpu = hwmon.Cpuinfo()
 	metrics.Mem = hwmon.Meminfo()
 	metrics.Ldavg = hwmon.Loadinfo()
