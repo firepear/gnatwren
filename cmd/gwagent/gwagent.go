@@ -51,7 +51,7 @@ func main() {
 
 
         // set up client configuration and create client instance
-        conf := &petrel.ClientConfig{Addr: config.GatherAddr}
+        pconf := &petrel.ClientConfig{Addr: config.GatherAddr}
 
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
@@ -61,7 +61,7 @@ func main() {
 	keepalive := true
         for keepalive {
                 select {
-                case <-time.After(time.Duration(rand.Intn(intlen)) * time.Second):
+                case <-time.After(time.Duration(config.Intervals[rand.Intn(intlen)]) * time.Second):
                         // this case selects one of our defined
                         // sampling periods and schedules an event for
                         // that many seconds in the future. if the
@@ -69,7 +69,7 @@ func main() {
                         // we should report in.
                         log.Printf("Sending data to Gather\n")
 			sample, err := gatherMetrics()
-			c, err := petrel.TCPClient(conf)
+			c, err := petrel.TCPClient(pconf)
 			if err != nil {
 				log.Fatalf("can't initialize client: %s\n", err)
 			}

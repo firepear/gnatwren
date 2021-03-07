@@ -21,7 +21,7 @@ var resp []byte
 
 func agentUpdate(args [][]byte) ([]byte, error) {
 	var upd = data.AgentPayload{}
-	err := json.Unmarshal(args[1], &upd)
+	err := json.Unmarshal(args[0], &upd)
 	if err != nil {
 		return resp, err
 	}
