@@ -16,7 +16,7 @@ import (
 
 
 // the fake, empty response sent back to 'agentupdate' requests
-var auresp []byte
+var fresp []byte
 // temporary struct to hold last-reported metrics until a datastore is
 // implemented
 var curMetrics = map[string]data.AgentPayload{}
@@ -27,18 +27,29 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 	var upd = data.AgentPayload{}
 	err := json.Unmarshal(args[0], &upd)
 	if err != nil {
-		return auresp, err
+		return fresp, err
 	}
 
 	mux.Lock()
 	defer mux.Unlock()
 	curMetrics[upd.Host] = upd
 	log.Printf("Updated %s: %v", upd.Host, curMetrics[upd.Host])
-	return auresp, err
+	return fresp, err
 }
 
 
 func query (args [][]byte) ([]byte, error) {
+	var q = data.Query{}
+	err := json.Unmarshal(args[0], &upd)
+	if err != nil {
+		return fresp, err
+	}
+
+	if q.Op == "status" {
+		return json.Marshal(curMetrics), err
+	}
+
+	return fresp, err
 }
 
 
