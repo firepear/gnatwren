@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 
 	"github.com/firepear/petrel"
@@ -44,7 +45,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	for hostname, hostdata := range metrics {
+	var hosts []string
+	for k := range metrics {
+		hosts = append(hosts, k)
+	}
+	sort.Strings(hosts)
+
+	for _, hostname := range hosts  {
+		hostdata := metrics[hostname]
 		fmt.Println(hostname)
 		mincore, maxcore, avgcore, coretot := 0, 0, 0, 0
 		for _, core := range hostdata.Cpu.Cores {
