@@ -40,13 +40,14 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 
 func query (args [][]byte) ([]byte, error) {
 	var q = data.Query{}
-	err := json.Unmarshal(args[0], &upd)
+	err := json.Unmarshal(args[0], &q)
 	if err != nil {
 		return fresp, err
 	}
 
 	if q.Op == "status" {
-		return json.Marshal(curMetrics), err
+		respb, err := json.Marshal(curMetrics)
+		return respb, err
 	}
 
 	return fresp, err
