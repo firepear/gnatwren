@@ -11,13 +11,13 @@ type CPUdata struct {
 
 
 type AgentConfig struct {
-	GatherAddr string `json: "gather_addr"`
-	Active     bool   `json: "active"`
-	Intervals  []int  `json: "intervals"`
+	GatherAddr string `json:"gather_addr"`
+	Active     bool   `json:"active"`
+	Intervals  []int  `json:"intervals"`
 }
 
 type GatherConfig struct {
-	BindAddr string `json: "bind_addr"`
+	BindAddr string `json:"bind_addr"`
 }
 
 

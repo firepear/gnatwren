@@ -50,13 +50,8 @@ func main() {
 	req := []byte("agentupdate ")
 
 
-        // set up configuration and create client instance
+        // set up client configuration and create client instance
         conf := &petrel.ClientConfig{Addr: config.GatherAddr}
-        c, err := petrel.TCPClient(conf)
-        if err != nil {
-                log.Fatalf("can't initialize client: %s\n", err)
-        }
-        defer c.Quit()
 
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
@@ -74,11 +69,15 @@ func main() {
                         // we should report in.
                         log.Printf("Sending data to Gather\n")
 			sample, err := gatherMetrics()
+			c, err := petrel.TCPClient(conf)
+			if err != nil {
+				log.Fatalf("can't initialize client: %s\n", err)
+			}
 			_, err = c.Dispatch(append(req, sample...))
 			if err != nil {
 				log.Fatalf("did not get successful response: %s\n", err)
-				os.Exit(1)
 			}
+			c.Quit()
                 case <-sigchan:
                         // we've trapped a signal from the OS. set
                         // keepalive to false and break out of our
