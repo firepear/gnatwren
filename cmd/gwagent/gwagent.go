@@ -83,15 +83,14 @@ func main() {
                 select {
                 case <-time.After(time.Duration(config.Intervals[rand.Intn(intlen)]) * time.Second):
                         // this case selects one of our defined
-                        // sampling periods and schedules an event for
-                        // that many seconds in the future. if the
-                        // event arrives, then we're still alive and
-                        // we should report in.
+                        // sampling periods and schedules a message
+                        // for that many seconds in the future. when it
+                        // arrives, metrics are gathered and reported
 			sendMetrics(pconf)
                 case <-sigchan:
                         // we've trapped a signal from the OS. set
                         // keepalive to false and break out of our
-                        // select
+                        // select (AKA terminate)
                         log.Println("OS signal received; shutting down")
                         keepalive = false
 			break

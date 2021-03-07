@@ -14,24 +14,33 @@ import (
 	"github.com/firepear/gnatwren/internal/data"
 )
 
+
+// the fake, empty response sent back to 'agentupdate' requests
+var auresp []byte
+// temporary struct to hold last-reported metrics until a datastore is
+// implemented
 var curMetrics = map[string]data.AgentPayload{}
 var mux = &sync.RWMutex{}
-var resp []byte
 
 
 func agentUpdate(args [][]byte) ([]byte, error) {
 	var upd = data.AgentPayload{}
 	err := json.Unmarshal(args[0], &upd)
 	if err != nil {
-		return resp, err
+		return auresp, err
 	}
 
 	mux.Lock()
 	defer mux.Unlock()
 	curMetrics[upd.Host] = upd
 	log.Printf("Updated %s: %v", upd.Host, curMetrics[upd.Host])
-	return resp, err
+	return auresp, err
 }
+
+
+func query (args [][]byte) ([]byte, error) {
+}
+
 
 
 // msgHandler takes care of messages which arrive on the Server's Msgr
