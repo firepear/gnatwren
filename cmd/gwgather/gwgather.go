@@ -119,7 +119,12 @@ func main() {
 	// register our handler function(s)
 	err = s.Register("agentupdate", "blob", agentUpdate)
         if err != nil {
-                log.Printf("failed to register responder 'gather': %s", err)
+                log.Printf("failed to register responder 'agentupdate': %s", err)
+                os.Exit(1)
+        }
+	err = s.Register("query", "blob", query)
+        if err != nil {
+                log.Printf("failed to register responder 'query': %s", err)
                 os.Exit(1)
         }
 
