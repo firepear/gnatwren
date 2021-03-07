@@ -7,21 +7,29 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/firepear/petrel"
 	"github.com/firepear/gnatwren/internal/data"
 )
 
-func gatherMetrics(args [][]byte) ([]byte, error) {
-	metrics := data.AgentPayload{}
+var curMetrics = map[string]data.AgentPayload{}
+var mux = &sync.RWMutex{}
+var resp []byte
 
-	metrics.Cpu = hwmon.Cpuinfo()
-	metrics.Mem = hwmon.Meminfo()
-	metrics.Ldavg = hwmon.Loadinfo()
-	metrics.Upt = hwmon.Uptime()
 
-	return json.Marshal(metrics)
+func agentUpdate(args [][]byte) ([]byte, error) {
+	var upd = data.AgentPayload{}
+	err := json.Unmarshal(args[1], &upd)
+	if err != nil {
+		return resp, err
+	}
+
+	mux.Lock()
+	defer mux.Unlock()
+	curMetrics[upd.Host] = upd
+	return resp, err
 }
 
 
@@ -74,7 +82,7 @@ func main() {
 
 	// configure the petrel server
 	c := &petrel.ServerConfig{
-                Sockname: config.Socket,
+                Sockname: config.BindAddr,
                 Msglvl: petrel.All,
 		Timeout: 5,
         }
@@ -87,13 +95,13 @@ func main() {
 	log.Printf("gwagent server instantiated")
 
 	// register our handler function(s)
-	err = s.Register("agentupdate", "blob", gatherMetrics)
+	err = s.Register("agentupdate", "blob", agentUpdate)
         if err != nil {
                 log.Printf("failed to register responder 'gather': %s", err)
                 os.Exit(1)
         }
 
-	// create the 
+	// create the shutdown channel
 	msgchan := make(chan error, 1)
         go msgHandler(s, msgchan)
 

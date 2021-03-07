@@ -11,17 +11,19 @@ type CPUdata struct {
 
 
 type AgentConfig struct {
-	Gather string `json: "gather"`
-	Active bool  `json: "active"`
+	GatherAddr string `json: "gather_addr"`
+	Active     bool   `json: "active"`
+	Intervals  []int  `json: "intervals"`
 }
 
 type GatherConfig struct {
-	Bind string `json: "bind"`
+	BindAddr string `json: "bind_addr"`
 }
 
 
 // AgentPayload represents one sample, as collected by gwagent.
 type AgentPayload struct {
+	Host string
 	Cpu CPUdata
 	Mem [3]int
 	Ldavg [3]string

@@ -1,4 +1,5 @@
 {
-    "gather": "0.0.0.0:11099",
-    "active": true
+    "gather_addr": "10.1.1.1:11099",
+    "active": true,
+    "intervals": [29, 31, 37, 41, 43]
 }
