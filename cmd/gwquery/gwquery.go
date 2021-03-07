@@ -55,7 +55,6 @@ func main() {
 	for _, hostname := range hosts  {
 		hostdata := metrics[hostname]
 		fmt.Printf("%s  %s (%d threads)\n", hostname, hostdata.Cpu.Name, len(hostdata.Cpu.Cores))
-		fmt.Println("  ----------------------------------------------------------------------")
 
 		mincore, maxcore, avgcore, coretot := 0, 0, 0, 0
 		for _, core := range hostdata.Cpu.Cores {
