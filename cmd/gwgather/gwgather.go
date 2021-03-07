@@ -29,7 +29,7 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 	mux.Lock()
 	defer mux.Unlock()
 	curMetrics[upd.Host] = upd
-	log.Println("Updated %s: %v", upd.Host, curMetrics[upd.Host])
+	log.Printf("Updated %s: %v", upd.Host, curMetrics[upd.Host])
 	return resp, err
 }
 
