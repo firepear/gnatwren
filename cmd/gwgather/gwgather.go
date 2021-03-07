@@ -105,7 +105,7 @@ func main() {
 	// configure the petrel server
 	c := &petrel.ServerConfig{
                 Sockname: config.BindAddr,
-                Msglvl: petrel.All,
+                Msglvl: petrel.Error,
 		Timeout: 5,
         }
 	// and instantiate it
