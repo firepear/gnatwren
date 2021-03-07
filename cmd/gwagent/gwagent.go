@@ -33,9 +33,8 @@ func gatherMetrics() ([]byte, error) {
 	return json.Marshal(metrics)
 }
 
-func sendMetrics(pc *petrel.ClientConfig) {
+func sendMetrics(pc *petrel.ClientConfig) error {
 	// TODO: don't die on errors, but store for later
-	log.Printf("Sending data to Gather\n")
 	sample, err := gatherMetrics()
 	c, err := petrel.TCPClient(pc)
 	if err != nil {
@@ -44,9 +43,7 @@ func sendMetrics(pc *petrel.ClientConfig) {
 	defer c.Quit()
 
 	_, err = c.Dispatch(append(req, sample...))
-	if err != nil {
-		log.Fatalf("did not get successful response: %s\n", err)
-	}
+	return err
 }
 
 
@@ -86,7 +83,12 @@ func main() {
                         // sampling periods and schedules a message
                         // for that many seconds in the future. when it
                         // arrives, metrics are gathered and reported
-			sendMetrics(pconf)
+			err := sendMetrics(pconf)
+			for err != nil {
+				log.Printf("unsuccessful update: %s; retrying in 2s\n", err)
+				time.Sleep(2 * time.Second)
+				err = sendMetrics(pconf)
+			}
                 case <-sigchan:
                         // we've trapped a signal from the OS. set
                         // keepalive to false and break out of our
