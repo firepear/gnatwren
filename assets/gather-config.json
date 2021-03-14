@@ -1,3 +1,14 @@
 {
-    "bind_addr": "0.0.0.0:11099"
+    "bind_addr": "0.0.0.0:11099",
+    "alerts": {
+        "late_checkin": 90,
+        "over_temp": 75
+    },
+    "db": {
+        "location": "/path/to/db"
+    }
+    "files": {
+        "json_location": "/path/to/dir",
+        "json_interval": 30
+    }
 }
