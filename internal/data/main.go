@@ -23,7 +23,7 @@ type GatherDBConfig struct {
 }
 
 type GatherFileConfig struct {
-	Enabled bool    `json:"enabled"`
+	Enabled bool   `json:"enabled"`
 	JsonLoc string `json:"json_location"`
 	JsonInt int64  `json:"json_interval"`
 }

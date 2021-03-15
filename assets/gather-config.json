@@ -6,7 +6,7 @@
     },
     "db": {
         "location": "/path/to/db"
-    }
+    },
     "files": {
         "enabled": true,
         "json_location": "/path/to/dir",
