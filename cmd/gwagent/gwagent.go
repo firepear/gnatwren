@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -34,11 +35,11 @@ func gatherMetrics() ([]byte, error) {
 }
 
 func sendMetrics(pc *petrel.ClientConfig) error {
-	// TODO: don't die on errors, but store for later
 	sample, err := gatherMetrics()
 	c, err := petrel.TCPClient(pc)
 	if err != nil {
-		log.Fatalf("can't initialize client: %s\n", err)
+		err = fmt.Errorf("can't initialize client: %w\n", err)
+		return err
 	}
 	defer c.Quit()
 
@@ -55,11 +56,11 @@ func main() {
 	config := data.AgentConfig{}
 	content, err := ioutil.ReadFile(configfile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("can't read config: %s; bailing", err)
 	}
 	err = json.Unmarshal(content, &config)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("can't parse config as JSON: %s; bailing", err)
 	}
 	// set up the things we need to pick our reporting intervals
 	rand.Seed(time.Now().UnixNano())
@@ -85,9 +86,9 @@ func main() {
                         // arrives, metrics are gathered and reported
 			err := sendMetrics(pconf)
 			for err != nil {
-				log.Printf("unsuccessful update: %s; retrying in 2s\n", err)
-				time.Sleep(2 * time.Second)
-				err = sendMetrics(pconf)
+				log.Printf("unsuccessful update: %s\n", err)
+				//time.Sleep(2 * time.Second)
+				//err = sendMetrics(pconf)
 			}
                 case <-sigchan:
                         // we've trapped a signal from the OS. set
