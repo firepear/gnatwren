@@ -3,7 +3,6 @@ package hwmon
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -65,7 +64,7 @@ func CpuinfoSysfs() map[string]string {
 		cpunum := strings.Replace(cpu, "cpu", "", 1)
 		// build a path to the freq file and slurp it
 		path := fmt.Sprintf("/sys/devices/system/cpu/%s/cpufreq/scaling_cur_freq", cpu)
-		freqb, err := ioutil.ReadFile(path)
+		freqb, err := os.ReadFile(path)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -77,7 +76,7 @@ func CpuinfoSysfs() map[string]string {
 }
 
 func Loadinfo() [3]string {
-	loadavg_b, err := ioutil.ReadFile("/proc/loadavg")
+	loadavg_b, err := os.ReadFile("/proc/loadavg")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -150,7 +149,7 @@ func Tempinfo() int {
 		// otherwise, build a path to the 'name' file in the
 		// current hwmon dir and read its contents
 		path := fmt.Sprintf("/sys/class/hwmon/%s/name", hwmon)
-		name, err := ioutil.ReadFile(path)
+		name, err := os.ReadFile(path)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -165,7 +164,7 @@ func Tempinfo() int {
 			}
 			// and look at each of them
 			for _, temp := range temps {
-				label, err := ioutil.ReadFile(temp)
+				label, err := os.ReadFile(temp)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -176,7 +175,7 @@ func Tempinfo() int {
 				}
 				// when we find it, edit our path to point at
 				// the temperature source value, and read it
-				value, err := ioutil.ReadFile(strings.Replace(temp, "label", "input", 1))
+				value, err := os.ReadFile(strings.Replace(temp, "label", "input", 1))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -194,7 +193,7 @@ func Tempinfo() int {
 			// labels, and there appears to only be one
 			// input under the cpu_thermal entry. read it
 			// and handle as above
-			value, err := ioutil.ReadFile(fmt.Sprintf("/sys/class/hwmon/%s/temp1_input", hwmon))
+			value, err := os.ReadFile(fmt.Sprintf("/sys/class/hwmon/%s/temp1_input", hwmon))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -210,7 +209,7 @@ func Tempinfo() int {
 
 // Uptime reports the uptime count from /proc/uptime
 func Uptime() string {
-	content, err := ioutil.ReadFile("/proc/uptime")
+	content, err := os.ReadFile("/proc/uptime")
 	if err != nil {
 		log.Fatal(err)
 	}
