@@ -9,18 +9,16 @@ _Image credit: Fernando Burgalin Sequeria, via ebird/the Macaulay Library_
 **This software is under initial development, and is not yet suitable
 for use or deployment**
 
-## Information gathered
+## Metrics and events
 
-Implemented for x86 and Raspberry Pi:
+Reporting of the following data is implemented for x86 and Raspberry Pi:
 
 - Total and available memory
 - CPU name, temperature (AMD K10 and Pi only), and per-core frequencies
 - Uptime
 - Loadavg
 
-## Events detected
-
-None yet.
+No events are yet being detected.
 
 ## Installation
 
