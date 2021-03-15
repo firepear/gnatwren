@@ -1,10 +1,12 @@
 0.5.0 - 2021-03-15
 --------------------------------------------------------------------
 
-    * gwagent no longer dies on connection failure
+    * gwagent now stows unsendable metrics to a file, instead of
+      dying. Stowed metrics are sent when connectivity to gwgather
+      recovers
 
-    * 
-
+    * Go 1.16 is now required, as ioutil dependencies have been
+      removed
 
 
 0.4.0 - 2021-03-07

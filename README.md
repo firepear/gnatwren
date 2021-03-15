@@ -60,6 +60,6 @@ management tool:
   should be writable by `nobody`
 - Make sure that the location you've defined for `gwgather`'s DB is
   writable by user `nobody`
-- Enable and start the `gnatwren-agent` service on agent nodes
 - Enable and start the `gnatwren-gather` service on the aggregator
   node
+- Enable and start the `gnatwren-agent` service on agent nodes

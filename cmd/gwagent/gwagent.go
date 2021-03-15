@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -18,9 +19,15 @@ import (
 )
 
 
-var req = []byte("agentupdate ")
-var nl = []byte("\n")
-var mux = &sync.RWMutex{}
+var (
+	req = []byte("agentupdate ")
+	nl = []byte("\n")
+	mux = &sync.RWMutex{}
+	stow = "/var/run/gnatwren/agent_metrics.log"
+	stow2 = "/var/run/gnatwren/agent_metrics.log.2"
+)
+
+
 
 func gatherMetrics() ([]byte, error) {
 	metrics := data.AgentPayload{}
@@ -71,7 +78,7 @@ func stowMetrics(m []byte) error {
 	// get write lock on the mux, then open the file
 	mux.Lock()
 	defer mux.Unlock()
-	f, err := os.OpenFile("/var/run/gnatwren/agent_metrics.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(stow, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("stow open failed: %w", err)
 	}
@@ -87,11 +94,90 @@ func stowMetrics(m []byte) error {
 
 
 func sendUndeliveredMetrics(pc *petrel.ClientConfig, c chan error) {
-	// see if there are stowed metrics
-	// connect to gwgather
-	mux.RLock()
-	defer mux.RUnlock()
-	
+	// if the stow file doesn't exist, there's nothing to do
+	if _, err := os.Stat(stow); os.IsNotExist(err) {
+		c <- nil
+		return
+	}
+
+	// if it does, aquire lock on mux. this is not just to prevent
+	// file access but to prevent this func from running multiple
+	// times simultaneously
+	mux.Lock()
+	defer mux.Unlock()
+
+	sent := 0
+	stowed := 0
+	// try to instantiate a petrel client
+	pet, err := petrel.TCPClient(pc)
+	if err != nil {
+		c <- fmt.Errorf("found stowed metrics but can't connect: %w; deferring\n", err)
+		return
+	}
+	defer pet.Quit()
+
+	// open the stow file and try to send the contents to gather
+	// (one metrics set per line)
+	f, err := os.Open(stow)
+	if err != nil {
+		c <- fmt.Errorf("found stowed metrics but can't open: %w; deferring\n", err)
+		return
+	}
+	f2, err := os.OpenFile(stow2, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		c <- fmt.Errorf("found stowed metrics but stow2 open failed: %w", err)
+		return
+	}
+	defer f.Close()
+	log.Printf("found stowed metrics; sending\n")
+
+	petok := true
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		m := scanner.Bytes()
+		if petok {
+			// while the connection is healthy, send data
+			_, err = pet.Dispatch(append(req, m...))
+			if err != nil {
+				log.Printf("sent %d metrics then hit a problem: %w\n", sent, err)
+				petok = false
+			} else {
+				sent++
+			}
+		} else {
+			// if the connection becomes unhealthy, roll
+			// over to copying the remaining data to the
+			// alternative stow file
+			_, err = f2.Write(append(m, nl...))
+			if err != nil {
+				// and if that fails, give up. we'll
+				// just have to resend some later
+				c <- fmt.Errorf("stow2 write failed: %w; can't finish truncating file", err)
+				f2.Close()
+				os.Remove(stow2)
+				return
+			}
+			stowed++
+		}
+	}
+
+	// we've looped through the whole stow file. if petok is still
+	// true then we sent everything and can clean everything
+	// up. if not, but we did make it here, then we copied unsent
+	// metrics to stow2, and it should be become the stow file.
+	if petok {
+		f.Close()
+		f2.Close()
+		os.Remove(stow)
+		os.Remove(stow2)
+		log.Printf("sent %d metrics; done\n", sent)
+	} else {
+		f.Close()
+		f2.Close()
+		os.Rename(stow2, stow)
+		log.Printf("restowed %d metrics for later sending\n", stowed)
+	}
+	c <- nil
 }
 
 
@@ -123,7 +209,12 @@ func main() {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
 	// handle any saved metrics, synchronously, if we have them
-	sendUndeliveredMetrics(pconf)
+	c := make(chan error)
+	go sendUndeliveredMetrics(pconf, c)
+	err = <-c
+	if err != nil {
+		log.Printf("unsuccessful update: %s\n", err)
+	}
 
 	// client event loop
 	keepalive := true
@@ -142,7 +233,7 @@ func main() {
 			go sendUndeliveredMetrics(pconf, c)
 			err := <-c
 			if err != nil {
-				log.Printf("unsuccessful update: %s\n", err)
+				log.Printf("%s\n", err)
 			}
                 case <-sigchan:
                         // we've trapped a signal from the OS. set
