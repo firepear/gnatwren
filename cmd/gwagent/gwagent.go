@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -19,7 +20,8 @@ import (
 
 
 var req = []byte("agentupdate ")
-
+var nl = []byte("\n")
+var mux = &sync.RWMutex{}
 
 func gatherMetrics() ([]byte, error) {
 	metrics := data.AgentPayload{}
@@ -34,17 +36,62 @@ func gatherMetrics() ([]byte, error) {
 	return json.Marshal(metrics)
 }
 
-func sendMetrics(pc *petrel.ClientConfig) error {
+
+func stowMetrics(m []byte) error {
+	// get write lock on the mux, then open the file
+	mux.Lock()
+	defer mux.Unlock()
+	f, err := os.OpenFile("/var/run/gnatwren/agent_metrics.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("stow open failed: %w", err)
+	}
+	defer f.Close()
+
+	// have file and lock: stow data
+	_, err = f.Write(append(m, nl...))
+	if err != nil {
+		err = fmt.Errorf("stow write failed: %w", err)
+	}
+	return err
+}
+
+
+
+func sendMetrics(pc *petrel.ClientConfig) {
+	// get metrics for this run
 	sample, err := gatherMetrics()
+	// try to instantiate a petrel client
 	c, err := petrel.TCPClient(pc)
 	if err != nil {
-		err = fmt.Errorf("can't initialize client: %w\n", err)
-		return err
+		// on failure, stow metrics and return error
+		log.Printf("can't initialize client: %s\n", err)
+		err = stowMetrics(sample)
+		if err != nil {
+			log.Printf("metrics lost: %s\n", err)
+		}
+		log.Printf("metrics stowed\n")
+		return
 	}
 	defer c.Quit()
 
+	// we have a client; send metrics to gwgather
 	_, err = c.Dispatch(append(req, sample...))
-	return err
+	if err != nil {
+		// on failure, stow metrics
+		log.Printf("can't initialize client: %w\n", err)
+		err = stowMetrics(sample)
+		if err != nil {
+			log.Printf("metrics lost: %s\n", err)
+		}
+		log.Printf("metrics stowed\n")
+	}
+}
+
+
+func sendUndeliveredMetrics(pc *petrel.ClientConfig, c chan error) {
+	mux.RLock()
+	defer mux.RUnlock()
+	
 }
 
 
@@ -75,6 +122,9 @@ func main() {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
+	// handle any saved metrics, synchronously, if we have them
+	sendUndeliveredMetrics(pconf)
+
 	// client event loop
 	keepalive := true
         for keepalive {
@@ -84,11 +134,15 @@ func main() {
                         // sampling periods and schedules a message
                         // for that many seconds in the future. when it
                         // arrives, metrics are gathered and reported
-			err := sendMetrics(pconf)
-			for err != nil {
+			sendMetrics(pconf)
+		case <-time.After(time.Duration(90 * time.Second)):
+			// every 90 seconds, see if there are
+			// undelivered metrics and try to deliver them
+			c := make(chan error)
+			go sendUndeliveredMetrics(pconf, c)
+			err := <-c
+			if err != nil {
 				log.Printf("unsuccessful update: %s\n", err)
-				//time.Sleep(2 * time.Second)
-				//err = sendMetrics(pconf)
 			}
                 case <-sigchan:
                         // we've trapped a signal from the OS. set
