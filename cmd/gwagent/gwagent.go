@@ -213,8 +213,10 @@ func main() {
 	go sendUndeliveredMetrics(pconf, c)
 	err = <-c
 	if err != nil {
-		log.Printf("unsuccessful update: %s\n", err)
+		log.Printf("%s\n", err)
 	}
+	// now setup a ticker for future stowage checks
+	stowtick := time.NewTicker(90 * time.Second)
 
 	// client event loop
 	keepalive := true
@@ -226,9 +228,9 @@ func main() {
                         // for that many seconds in the future. when it
                         // arrives, metrics are gathered and reported
 			sendMetrics(pconf)
-		case <-time.After(time.Duration(90 * time.Second)):
-			// every 90 seconds, see if there are
-			// undelivered metrics and try to deliver them
+		case <-stowtick.C:
+			// see if there are undelivered metrics and
+			// try to deliver them
 			c := make(chan error)
 			go sendUndeliveredMetrics(pconf, c)
 			err := <-c
