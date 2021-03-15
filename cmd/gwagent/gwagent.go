@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -35,26 +34,6 @@ func gatherMetrics() ([]byte, error) {
 
 	return json.Marshal(metrics)
 }
-
-
-func stowMetrics(m []byte) error {
-	// get write lock on the mux, then open the file
-	mux.Lock()
-	defer mux.Unlock()
-	f, err := os.OpenFile("/var/run/gnatwren/agent_metrics.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("stow open failed: %w", err)
-	}
-	defer f.Close()
-
-	// have file and lock: stow data
-	_, err = f.Write(append(m, nl...))
-	if err != nil {
-		err = fmt.Errorf("stow write failed: %w", err)
-	}
-	return err
-}
-
 
 
 func sendMetrics(pc *petrel.ClientConfig) {
@@ -88,7 +67,28 @@ func sendMetrics(pc *petrel.ClientConfig) {
 }
 
 
+func stowMetrics(m []byte) error {
+	// get write lock on the mux, then open the file
+	mux.Lock()
+	defer mux.Unlock()
+	f, err := os.OpenFile("/var/run/gnatwren/agent_metrics.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("stow open failed: %w", err)
+	}
+	defer f.Close()
+
+	// have file and lock: stow data
+	_, err = f.Write(append(m, nl...))
+	if err != nil {
+		err = fmt.Errorf("stow write failed: %w", err)
+	}
+	return err
+}
+
+
 func sendUndeliveredMetrics(pc *petrel.ClientConfig, c chan error) {
+	// see if there are stowed metrics
+	// connect to gwgather
 	mux.RLock()
 	defer mux.RUnlock()
 	
@@ -101,7 +101,7 @@ func main() {
 	flag.StringVar(&configfile, "config", "/etc/gnatwren/agent.json", "Location of the gwagent config file")
 	flag.Parse()
 	config := data.AgentConfig{}
-	content, err := ioutil.ReadFile(configfile)
+	content, err := os.ReadFile(configfile)
 	if err != nil {
 		log.Fatalf("can't read config: %s; bailing", err)
 	}

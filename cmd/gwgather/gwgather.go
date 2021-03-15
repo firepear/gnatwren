@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -87,7 +86,7 @@ func main() {
 	flag.Parse()
 
 	config := data.GatherConfig{}
-	content, err := ioutil.ReadFile(configfile)
+	content, err := os.ReadFile(configfile)
 	if err != nil {
 		log.Fatal(err)
 	}
