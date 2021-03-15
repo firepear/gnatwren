@@ -1,0 +1,11 @@
+[Unit]
+Description=Gnatwren metrics and monitoring aggregator
+After=network-online.target
+
+[Service]
+Type=simple
+User=nobody
+ExecStart=/usr/local/bin/gwagather -config=/etc/gnatwren/gather-config.json
+
+[Install]
+WantedBy=multi-user.target
