@@ -215,19 +215,22 @@ func main() {
 	if err != nil {
 		log.Printf("%s\n", err)
 	}
+
 	// now setup a ticker for future stowage checks
 	stowtick := time.NewTicker(90 * time.Second)
+	// and a timer for metrics (with a random duration from our
+	// list of intervals)
+	metrictick := time.NewTimer(time.Duration(config.Intervals[rand.Intn(intlen)]) * time.Second)
 
 	// client event loop
 	keepalive := true
         for keepalive {
                 select {
-                case <-time.After(time.Duration(config.Intervals[rand.Intn(intlen)]) * time.Second):
-                        // this case selects one of our defined
-                        // sampling periods and schedules a message
-                        // for that many seconds in the future. when it
-                        // arrives, metrics are gathered and reported
+                case <-metrictick.C:
+                        // gather metrics, try to ship them, and set a
+                        // new timer for this case
 			sendMetrics(pconf)
+			metrictick = time.NewTimer(time.Duration(config.Intervals[rand.Intn(intlen)]) * time.Second)
 		case <-stowtick.C:
 			// see if there are undelivered metrics and
 			// try to deliver them
