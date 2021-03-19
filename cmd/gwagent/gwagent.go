@@ -63,7 +63,7 @@ func sendMetrics(pc *petrel.ClientConfig) {
 	_, err = c.Dispatch(append(req, sample...))
 	if err != nil {
 		// on failure, stow metrics
-		log.Printf("can't initialize client: %w\n", err)
+		log.Printf("can't initialize client: %s\n", err)
 		err = stowMetrics(sample)
 		if err != nil {
 			log.Printf("metrics lost: %s\n", err)
@@ -79,14 +79,14 @@ func stowMetrics(m []byte) error {
 	defer mux.Unlock()
 	f, err := os.OpenFile(stow, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("stow open failed: %w", err)
+		return fmt.Errorf("stow open failed: %s", err)
 	}
 	defer f.Close()
 
 	// have file and lock: stow data
 	_, err = f.Write(append(m, nl...))
 	if err != nil {
-		err = fmt.Errorf("stow write failed: %w", err)
+		err = fmt.Errorf("stow write failed: %s", err)
 	}
 	return err
 }
@@ -109,7 +109,7 @@ func sendUndeliveredMetrics(pc *petrel.ClientConfig, c chan error) {
 	// try to instantiate a petrel client
 	pet, err := petrel.TCPClient(pc)
 	if err != nil {
-		c <- fmt.Errorf("found stowed metrics but can't connect: %w; deferring\n", err)
+		c <- fmt.Errorf("found stowed metrics but can't connect: %s; deferring\n", err)
 		return
 	}
 	defer pet.Quit()
@@ -118,7 +118,7 @@ func sendUndeliveredMetrics(pc *petrel.ClientConfig, c chan error) {
 	// (one metrics set per line)
 	f, err := os.Open(stow)
 	if err != nil {
-		c <- fmt.Errorf("found stowed metrics but can't open: %w; deferring\n", err)
+		c <- fmt.Errorf("found stowed metrics but can't open: %s; deferring\n", err)
 		return
 	}
 	defer f.Close()
@@ -132,7 +132,7 @@ func sendUndeliveredMetrics(pc *petrel.ClientConfig, c chan error) {
 		// TODO handle the actual response, to know how not to count dupes
 		_, err = pet.Dispatch(append(req, m...))
 		if err != nil {
-			log.Printf("sent %d metrics then hit a problem: %w\n", sent, err)
+			log.Printf("sent %d metrics then hit a problem: %s\n", sent, err)
 			petok = false
 			break
 		}
