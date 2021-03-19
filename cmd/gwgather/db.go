@@ -30,21 +30,25 @@ func dbUpdate(payload []byte, upd data.AgentPayload) error {
 	return err
 }
 
-func dbGetCurrentStats() (map[string]data.AgentPayload, error) {
+func dbGetCurrentStats() (map[string]data.AgentStatus, error) {
 	// copy the nodeStatus to minimize time it's locked
-	nodeCopy := map[string]int64{}
+	nodeCopy := map[string][2]int64{}
 	mux.RLock()
 	for k, v := range nodeStatus {
 		nodeCopy[k] = v
 	}
 	mux.RUnlock()
-	// make a map to hold the metrics
-	metrics := map[string]data.AgentPayload{}
 
+	// make a map to hold the metrics
+	metrics := map[string]data.AgentStatus{}
+
+	// iterate on nodeCopy to get the hostname and most recent
+	// update time, which we need to build a key, to get the most
+	// recent metrics
 	var err error
 	for k, v := range nodeCopy {
 		// make key
-		key := []byte(strconv.Itoa(int(v)))
+		key := []byte(strconv.Itoa(int(v[1])))
 		key = append(key, []byte(k)...)
 		// lookup data
 		err = db.View(func(txn *badger.Txn) error {
@@ -52,17 +56,19 @@ func dbGetCurrentStats() (map[string]data.AgentPayload, error) {
 			if err != nil {
 				return err
 			}
-
+			// we basically have a cursor at this point,
+			// and call Value to vivify it. that data is
+			// only accessible inside the function call,
+			// however
 			err = item.Value(func(val []byte) error {
-				var m data.AgentPayload
-				err = json.Unmarshal(val, &m)
+				var m data.AgentStatus
+				m.TS = v[0]
+				err = json.Unmarshal(val, &m.Payload)
 				metrics[k] = m
-				//log.Printf("%s: %v", k, metrics[k])
 				return err
 			})
 			return err
 		})
 	}
-	//log.Println(metrics)
 	return metrics, err
 }

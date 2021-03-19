@@ -45,6 +45,13 @@ type Query struct {
 }
 
 
+// AgentStatus is a repackaged AgentPayload that adds the most recent
+// check-in time from gwgather
+type AgentStatus struct {
+	TS int64
+	Payload AgentPayload
+}
+
 // AgentPayload represents one sample, as collected by gwagent.
 type AgentPayload struct {
 	Host string

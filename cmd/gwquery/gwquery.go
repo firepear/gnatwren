@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// print out what we got back
-	metrics := map[string]data.AgentPayload{}
+	metrics := map[string]data.AgentStatus{}
 	err = json.Unmarshal(resp, &metrics);
 	if err != nil {
 		fmt.Printf("could not unmarshal json: %s\n", err)
@@ -53,7 +53,8 @@ func main() {
 	sort.Strings(hosts)
 
 	for _, hostname := range hosts  {
-		hostdata := metrics[hostname]
+		checkin := metrics[hostname].TS
+		hostdata := metrics[hostname].Payload
 		fmt.Printf("%s  %s (%d threads)\n", hostname, hostdata.Cpu.Name, len(hostdata.Cpu.Cores))
 
 		mincore, maxcore, avgcore, coretot := 0, 0, 0, 0
@@ -77,7 +78,7 @@ func main() {
 		uptime = uptime - h * 3600
 		m := uptime / 60
 		s := uptime - m * 60
-		ts := time.Now().Unix() - hostdata.TS
+		ts := time.Now().Unix() - checkin
 
 		fmt.Printf("  SYS || Up %dd %02d:%02d:%02d  |  Ldavg %s  |  Chkd %ds ago\n", int(d), int(h), int(m), int(s), hostdata.Ldavg[2], ts)
 		fmt.Printf("  CPU || Min/max/avg %d / %d / %d MHz  |  Temp %05.2fC\n", mincore, maxcore, avgcore, hostdata.Cpu.Temp)

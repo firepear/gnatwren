@@ -41,15 +41,19 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 	}
 
 	// update nodeStatus
+	newTS := [2]int64{}
 	mux.Lock()
 	// the first timestamp is now (check-in ts)
-	nodeStatus[upd.Host][0] = time.Now().Unix()
+	newTS[0] = time.Now().Unix()
 	// second timestamp is the hosts's reporting time (which can
 	// be in the past due to event playback). only update if the
 	// event timestamp is newer than what we have
 	if upd.TS > nodeStatus[upd.Host][1] {
-		nodeStatus[upd.Host][1] = upd.TS
+		newTS[1] = upd.TS
+	} else {
+		newTS[1] = nodeStatus[upd.Host][1]
 	}
+	nodeStatus[upd.Host] = newTS
 	mux.Unlock()
 
 	// send data to the DB
