@@ -1,3 +1,14 @@
+0.6.1 - 2021-03-19
+--------------------------------------------------------------------
+
+    * gwgather's nodeStatus map now stores two timestamps: most recent
+      checkin and newest metrics. When nodes are reporting stowed
+      metrics, these will differ
+
+    * gwquery updated to handle AgentStatus, a new type derived from
+      AgentPayload, which includes the most recent checkin timestamp
+
+
 0.6.0 - 2021-03-19
 --------------------------------------------------------------------
 
