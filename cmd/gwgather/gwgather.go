@@ -12,18 +12,20 @@ import (
 
 	"github.com/firepear/petrel"
 	"github.com/firepear/gnatwren/internal/data"
+	badger "github.com/dgraph-io/badger/v3"
 )
 
 
 var (
 	// gwgather config
 	config data.GatherConfig
+	db *badger.DB
 	// the fake, empty response sent back to 'agentupdate'
 	// requests
 	fresp []byte
 	// nodeStatus holds the last check-in time of nodes running
 	// agents. mux is its lock
-	nodeStatus map[string]int64
+	nodeStatus = map[string]int64{}
 	mux sync.RWMutex
 )
 
@@ -58,11 +60,11 @@ func query (args [][]byte) ([]byte, error) {
 		return fresp, err
 	}
 
-	//if q.Op == "status" {
-		//respb, err := json.Marshal(curMetrics)
-		//return respb, err
-	//}
-
+	if q.Op == "status" {
+		curMetrics, err := dbGetCurrentStats()
+		respb, err := json.Marshal(curMetrics)
+		return respb, err
+	}
 	return fresp, err
 }
 
@@ -88,6 +90,7 @@ func main() {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
+
 	// configure the petrel server
 	c := &petrel.ServerConfig{
                 Sockname: config.BindAddr,
@@ -102,6 +105,7 @@ func main() {
         }
 	log.Printf("gwagent server instantiated")
 
+
 	// register our handler function(s)
 	err = s.Register("agentupdate", "blob", agentUpdate)
         if err != nil {
@@ -113,6 +117,17 @@ func main() {
                 log.Printf("failed to register responder 'query': %s", err)
                 os.Exit(1)
         }
+
+
+	// Open the Badger database
+	options := badger.DefaultOptions(config.DB.Loc)
+	options.Logger = nil
+	db, err = badger.Open(options)
+	if err != nil {
+		log.Fatalf("badger: can't open db: %s", err)
+	}
+	defer db.Close()
+
 
 	keepalive := true
         for keepalive {
