@@ -53,32 +53,6 @@ func query (args [][]byte) ([]byte, error) {
 
 
 
-// msgHandler takes care of messages which arrive on the Server's Msgr
-// channel. It accepts all messages, but only handles 599 (network
-// error) and 199 (shutdown)
-func msgHandler(s *petrel.Server, msgchan chan error) {
-        var msg *petrel.Msg
-        keepalive := true
-
-        for keepalive {
-                msg = <-s.Msgr
-                switch msg.Code {
-                case 599:
-                        s.Quit()
-                        keepalive = false
-                        msgchan <- msg
-                case 199:
-                        keepalive = false
-                        msgchan <- msg
-		default:
-                        // anything else we'll log to the console to
-                        // show what's going on under the hood!
-                        log.Println(msg)
-
-		}
-        }
-}
-
 func main() {
 	// find out where the gwagent config file is and read it in
 	var configfile string
@@ -126,29 +100,31 @@ func main() {
                 os.Exit(1)
         }
 
-	// create the shutdown channel
-	msgchan := make(chan error, 1)
-        go msgHandler(s, msgchan)
-
 	keepalive := true
         for keepalive {
                 select {
-                case msg := <-msgchan:
-                        // we've been handed a Msg over msgchan, which
-                        // means that our Server has shut down.exit
-                        // this loop, causing main() to terminate.
-                        log.Printf("Handler has shut down. Last Msg received was: %s", msg)
-                        keepalive = false
-                        break
-                case <-sigchan:
-                        // we've trapped a signal from the OS. tell
-                        // our Server to shut down, but don't exit the
-                        // eventloop because we want to handle the
-                        // Msgs which will be incoming -- including
-                        // the one we'll get on msgchan once the
-                        // Server has finished its work.
+                case msg := <-s.Msgr:
+                        // handle messages from petrel
+			switch msg.Code {
+			case 199: // petrel quit
+				log.Printf("petrel server has shut down. last Msg received was: %s", msg)
+				keepalive = false
+				break
+			case 599: // petrel network error (listener socket died)
+				s.Quit()
+				keepalive = false
+				break
+			default:
+				// anything else we'll log to the console
+				log.Printf("petrel: %s", msg)
+			}
+		case <-sigchan:
+                        // OS signal. tell petrel to shut down, then
+                        // shut ourselves down
                         log.Println("OS signal received; shutting down")
                         s.Quit()
+			keepalive = false
+			break
                 }
         }
 }
