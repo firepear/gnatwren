@@ -19,13 +19,14 @@ import (
 var (
 	// gwgather config
 	config data.GatherConfig
+	// global placeholder for the db conn
 	db *badger.DB
 	// the fake, empty response sent back to 'agentupdate'
 	// requests
 	fresp []byte
 	// nodeStatus holds the last check-in time of nodes running
 	// agents. mux is its lock
-	nodeStatus = map[string]int64{}
+	nodeStatus = map[string][2]int64{}
 	mux sync.RWMutex
 )
 
@@ -39,9 +40,16 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 		return fresp, err
 	}
 
-	// acquire nodeStatus lock and update it
+	// update nodeStatus
 	mux.Lock()
-	nodeStatus[upd.Host] = time.Now().Unix()
+	// the first timestamp is now (check-in ts)
+	nodeStatus[upd.Host][0] = time.Now().Unix()
+	// second timestamp is the hosts's reporting time (which can
+	// be in the past due to event playback). only update if the
+	// event timestamp is newer than what we have
+	if upd.TS > nodeStatus[upd.Host][1] {
+		nodeStatus[upd.Host][1] = upd.TS
+	}
 	mux.Unlock()
 
 	// send data to the DB
