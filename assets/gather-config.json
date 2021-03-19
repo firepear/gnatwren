@@ -5,7 +5,7 @@
         "over_temp": 75
     },
     "db": {
-        "location": "/path/to/db"
+        "location": "/var/lib/gnatwren.db"
     },
     "files": {
         "enabled": true,
