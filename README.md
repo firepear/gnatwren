@@ -13,8 +13,8 @@ for use or deployment**
 
 Reporting of the following data is implemented for x86 and Raspberry Pi:
 
-- Total and available memory
 - CPU name, temperature (AMD K10 and Pi only), and per-core frequencies
+- Total and available memory
 - Uptime
 - Loadavg
 

@@ -8,30 +8,45 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/firepear/petrel"
 	"github.com/firepear/gnatwren/internal/data"
 )
 
 
-// the fake, empty response sent back to 'agentupdate' requests
-var fresp []byte
-// temporary struct to hold last-reported metrics until a datastore is
-// implemented
-var curMetrics = map[string]data.AgentPayload{}
-var mux = &sync.RWMutex{}
+var (
+	// gwgather config
+	config data.GatherConfig
+	// the fake, empty response sent back to 'agentupdate'
+	// requests
+	fresp []byte
+	// nodeStatus holds the last check-in time of nodes running
+	// agents. mux is its lock
+	nodeStatus map[string]int64
+	mux sync.RWMutex
+)
 
 
 func agentUpdate(args [][]byte) ([]byte, error) {
+	// vivify the update data
 	var upd = data.AgentPayload{}
 	err := json.Unmarshal(args[0], &upd)
 	if err != nil {
+		log.Printf("agentUpdate: json unmarshal err: %s", err)
 		return fresp, err
 	}
 
+	// acquire nodeStatus lock and update it
 	mux.Lock()
-	defer mux.Unlock()
-	curMetrics[upd.Host] = upd
+	nodeStatus[upd.Host] = time.Now().Unix()
+	mux.Unlock()
+
+	// send data to the DB
+	err = dbUpdate(args[0], upd)
+	if err != nil {
+		log.Printf("agentUpdate: badgerdb err: %s", err)
+	}
 	return fresp, err
 }
 
@@ -43,10 +58,10 @@ func query (args [][]byte) ([]byte, error) {
 		return fresp, err
 	}
 
-	if q.Op == "status" {
-		respb, err := json.Marshal(curMetrics)
-		return respb, err
-	}
+	//if q.Op == "status" {
+		//respb, err := json.Marshal(curMetrics)
+		//return respb, err
+	//}
 
 	return fresp, err
 }
@@ -59,12 +74,11 @@ func main() {
 	flag.StringVar(&configfile, "config", "/etc/gnatwren/gather.json", "Location of the gwgather config file")
 	flag.Parse()
 
-	config := data.GatherConfig{}
-	content, err := os.ReadFile(configfile)
+	configstr, err := os.ReadFile(configfile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = json.Unmarshal(content, &config)
+	err = json.Unmarshal(configstr, &config)
 	if err != nil {
 		log.Fatal(err)
 	}
