@@ -12,7 +12,8 @@ import (
 	"github.com/firepear/gnatwren/internal/data"
 )
 
-func dispatchQuery(c *petrel.Client, q data.Query) []byte {
+func dispatchQuery(c *petrel.Client, q data.Query, op string) []byte {
+	q.Op = op
 	var reqhead = []byte("query ")
 	qj, err := json.Marshal(q)
 	if err != nil {
@@ -79,6 +80,11 @@ func printMetrics(resp []byte) {
 }
 
 
+func printDBStatus (resp []byte) {
+}
+
+
+
 func main() {
 	// set up configuration and create client instance
 	conf := &petrel.ClientConfig{Addr: "localhost:11099"}
@@ -88,13 +94,14 @@ func main() {
 	}
 	defer c.Quit()
 
+	var req = data.Query{}
 	switch os.Args[1] {
 	case "status":
-		// stitch together a query
-		var req = data.Query{}
-		req.Op = os.Args[1]
-		resp := dispatchQuery(c, req)
+		resp := dispatchQuery(c, req, os.Args[1])
 		printMetrics(resp)
+	case "dbstatus":
+		resp := dispatchQuery(c, req, os.Args[1])
+		printDBStatus(resp)
 	default:
 		fmt.Printf("bad query type: '%s'\n", os.Args[1])
 	}
