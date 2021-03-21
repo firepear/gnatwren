@@ -1,3 +1,12 @@
+0.7.0 - 2021-03-21
+--------------------------------------------------------------------
+
+    * gwgather now makes DB GC calls on startup, and every 45 minutes
+      subsequently
+
+    * Petrel handlers split out into petrel.go
+
+
 0.6.1 - 2021-03-19
 --------------------------------------------------------------------
 

@@ -8,6 +8,10 @@ import (
 	"github.com/firepear/gnatwren/internal/data"
 )
 
+// the fake, empty response sent back to 'agentupdate'
+// requests
+var fresp []byte
+
 func agentUpdate(args [][]byte) ([]byte, error) {
 	// vivify the update data
 	var upd = data.AgentPayload{}
@@ -42,17 +46,22 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 }
 
 
-func queryStatus (args [][]byte) ([]byte, error) {
+func queryHandler (args [][]byte) ([]byte, error) {
 	var q = data.Query{}
 	err := json.Unmarshal(args[0], &q)
 	if err != nil {
 		return fresp, err
 	}
 
-	if q.Op == "status" {
+	switch q.Op {
+	case "status":
 		curMetrics, err := dbGetCurrentStats()
 		respb, err := json.Marshal(curMetrics)
 		return respb, err
+		//case "dbstatus":
+		//dbMetrics, err := dbGetDBStats()
+		//respb, err := json.Marshal(curMetrics)
+		//return respb, err
 	}
 	return fresp, err
 }

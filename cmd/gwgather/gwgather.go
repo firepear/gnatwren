@@ -21,9 +21,6 @@ var (
 	config data.GatherConfig
 	// global placeholder for the db conn
 	db *badger.DB
-	// the fake, empty response sent back to 'agentupdate'
-	// requests
-	fresp []byte
 	// nodeStatus holds the last check-in time of nodes running
 	// agents. mux is its lock
 	nodeStatus = map[string][2]int64{}
@@ -71,7 +68,7 @@ func main() {
                 log.Printf("failed to register responder 'agentupdate': %s", err)
                 os.Exit(1)
         }
-	err = s.Register("status", "blob", queryStatus)
+	err = s.Register("query", "blob", queryHandler)
         if err != nil {
                 log.Printf("failed to register responder 'status': %s", err)
                 os.Exit(1)

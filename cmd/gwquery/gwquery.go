@@ -12,35 +12,24 @@ import (
 	"github.com/firepear/gnatwren/internal/data"
 )
 
-func main() {
-	// set up configuration and create client instance
-	conf := &petrel.ClientConfig{Addr: "localhost:11099"}
-	c, err := petrel.TCPClient(conf)
-	if err != nil {
-		fmt.Printf("can't initialize client: %s\n", err)
-	}
-	defer c.Quit()
-
-	// stitch together a query
-	var reqh = []byte("query ")
-	var req = data.Query{}
-	req.Op = "status"
-	reqj, err := json.Marshal(req)
+func dispatchQuery(c *petrel.Client, q data.Query) []byte {
+	var reqhead = []byte("query ")
+	qj, err := json.Marshal(q)
 	if err != nil {
 		fmt.Printf("could not marshal request: %s\n", err)
 		os.Exit(1)
 	}
-
-	// and dispatch it to the server!
-	resp, err := c.Dispatch(append(reqh, reqj...))
+	resp, err := c.Dispatch(append(reqhead, qj...))
 	if err != nil {
 		fmt.Printf("did not get successful response: %s\n", err)
 		os.Exit(1)
 	}
+	return resp
+}
 
-	// print out what we got back
+func printMetrics(resp []byte) {
 	metrics := map[string]data.AgentStatus{}
-	err = json.Unmarshal(resp, &metrics);
+	err := json.Unmarshal(resp, &metrics);
 	if err != nil {
 		fmt.Printf("could not unmarshal json: %s\n", err)
 		os.Exit(1)
@@ -86,5 +75,27 @@ func main() {
 			float64(hostdata.Mem[0]) / 1024.0 / 1024.0,
 			(float64(hostdata.Mem[1]) / float64(hostdata.Mem[0]) * 100),
 			(float64(hostdata.Mem[2]) / float64(hostdata.Mem[0]) * 100))
+	}
+}
+
+
+func main() {
+	// set up configuration and create client instance
+	conf := &petrel.ClientConfig{Addr: "localhost:11099"}
+	c, err := petrel.TCPClient(conf)
+	if err != nil {
+		fmt.Printf("can't initialize client: %s\n", err)
+	}
+	defer c.Quit()
+
+	switch os.Args[1] {
+	case "status":
+		// stitch together a query
+		var req = data.Query{}
+		req.Op = os.Args[1]
+		resp := dispatchQuery(c, req)
+		printMetrics(resp)
+	default:
+		fmt.Printf("bad query type: '%s'\n", os.Args[1])
 	}
 }
