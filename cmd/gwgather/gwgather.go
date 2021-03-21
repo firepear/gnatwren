@@ -116,9 +116,7 @@ func main() {
                 os.Exit(1)
         }
 	log.Printf("gwagent server instantiated")
-
-
-	// register our handler function(s)
+	// then register handler function(s)
 	err = s.Register("agentupdate", "blob", agentUpdate)
         if err != nil {
                 log.Printf("failed to register responder 'agentupdate': %s", err)
@@ -139,6 +137,11 @@ func main() {
 		log.Fatalf("badger: can't open db: %s", err)
 	}
 	defer db.Close()
+	// GC the DB
+	_ := db.RunValueLogGC(0.7)
+	// and launch a ticker for future GC
+	dbgctick := time.NewTicker(2700 * time.Second)
+	defer dbcgctick.Stop()
 
 
 	keepalive := true
@@ -159,6 +162,9 @@ func main() {
 				// anything else we'll log to the console
 				log.Printf("petrel: %s", msg)
 			}
+		case <-dbgc.C:
+			// DB garbage collection
+			_ := db.RunValueLogGC(0.7)
 		case <-sigchan:
                         // OS signal. tell petrel to shut down, then
                         // shut ourselves down

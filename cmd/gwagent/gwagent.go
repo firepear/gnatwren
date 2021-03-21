@@ -187,6 +187,7 @@ func main() {
 
 	// now setup a ticker for future stowage checks
 	stowtick := time.NewTicker(90 * time.Second)
+	defer stowtick.Stop()
 	// and a timer for metrics (with a random duration from our
 	// list of intervals)
 	metrictick := time.NewTimer(time.Duration(config.Intervals[rand.Intn(intlen)]) * time.Second)
