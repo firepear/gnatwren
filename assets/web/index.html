@@ -10,65 +10,77 @@
     </style>
   </head>
   <body>
-    <div class="chart" id="cputemps" style="height:200px;"></div>
+    <div class="chart" id="cputemps" style="height:350px;"></div>
     <div class="chart" id="cputemps">
       <p>Foo.</p>
     </div>
   </body>
   <script>
+    var nodes = ["node01", "node02", "node03", "node04", "node05", "node06",
+                 "nodepi01", "nodepi02", "nodepi03", "nodepi04"];
+    var cpuTReq = new XMLHttpRequest();
+    cpuTReq.addEventListener("load", plotCPUTemps);
+
+    function plotCPUTemps() {
+        // reset cpuT.series and dimensions
+        cpuT.series = [];
+        cpuT.dataset.dimensions = ['timestamp'];
+        // create a hash for last-known temps and initazlize it to nulls
+        var tl = {};
+        for (let node in nodes) {
+            tl[nodes[node]] = null;
+            // also, while we're here, rebuild cpuT.series and dimensions
+            cpuT.series.push({name: nodes[node], type: 'line', showSymbol: false, encode: {x: 'timestamp', y: nodes[node]}});
+            cpuT.dataset.dimensions.push(nodes[node]);
+        }
+
+        // vivify the data we just fetched
+        var temps_in = JSON.parse(this.responseText);
+        // iterate over it
+        for (let ts in temps_in) {
+            var curData = [ts * 1000];
+            for (let node in nodes) {
+                var host = nodes[node];
+                if (host in temps_in[ts]) {
+                    tl[host] = temps_in[ts][host];
+                    curData.push(temps_in[ts][host]);
+                } else {
+                    curData.push(tl[host]);
+                }
+            }
+            cpuT.dataset.source.push(curData);
+        }
+        // apply and render
+        cpuT && cpuTChart.setOption(cpuT);
+    }
+
+    function getCPUTemps() {
+        cpuTReq.open("GET", "http://localhost:9099/gnatwren/cputemps.json");
+        cpuTReq.send();
+    }
+
     // one of these for every chart
     var cpuTDom = document.getElementById('cputemps');
     var cpuTChart = echarts.init(cpuTDom);
     var cpuT;
     // set options
     cpuT = {
-        title: { text: 'CPU Temperatures' },
+        title: { text: 'CPU Temperatures, last hour' },
         tooltip: { trigger: 'axis' },
         grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-        xAxis: {
-            type: 'time',
-            boundaryGap: ['20%', '20%'],
-            min: 'dataMin',
-            max: 'dataMax'
-        },
-        yAxis: { type: 'value' },
+        xAxis: { type: 'time', boundaryGap: ['20%', '20%'], min: 'dataMin', max: 'dataMax' },
+        yAxis: { type: 'value', min: 'dataMin' },
         // the following values will change over time
         //legend: { data: ['node01', 'node02', 'node03'] },
-        series: [
-            {
-                name: 'node01',
-                type: 'line',
-                encode: { x: 'timestamp', y: 'node01' }
-            },
-            {
-                name: 'node02',
-                type: 'line',
-                encode: { x: 'timestamp', y: 'node02' }
-            },
-            {
-                name: 'node03',
-                type: 'line',
-                encode: { x: 'timestamp', y: 'node03' }
-            }
-        ],
+        series: [],
         dataset: {
             // timestamps are in milliseconds; multiply by 1000 from DB
-            source: [
-                [ 1616359143000, 1, 2, 3 ],
-                [ 1616363000000, 2, 3, 1 ],
-                [ 1616366000000, null, 12, 4 ],
-                [ 1616369000000, 5, 5, 5 ],
-                [ 1616373000000, 8, 1, null ],
-                [ 1616376000000, 9, 2, 4 ],
-                [ 1616379000000, 8, null, 4 ],
-                [ 1616383000000, 8, 12, 6 ],
-                [ 1616386000000, 1, 2, 3 ],
-                [ 1616389000000, 4, 3, 2 ]
-            ],
-            dimensions: [ 'timestamp', 'node01', 'node02', 'node03' ]
+            source: [],
+            //[ 1616359143000, 1, 2, 3 ],
+            dimensions: ['timestamp']
         }
     };
     // apply and render
-    cpuT && cpuTChart.setOption(cpuT);
+    getCPUTemps();
   </script>
 </html>
