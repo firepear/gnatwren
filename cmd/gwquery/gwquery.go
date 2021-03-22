@@ -94,8 +94,8 @@ func printDBStatus (resp []byte) {
 	oldestInt, _ := strconv.Atoi(nums.Split(metrics.Oldest, -1)[0])
 	keydiff := newestInt - oldestInt
 	fmt.Printf("Number of rows currently existing: %d\n", metrics.Count)
-	fmt.Printf("Newest/oldest key:                 %s / %s\n", metrics.Newest, metrics.Oldest)
-	fmt.Printf("TS of newest/oldest key:           %s / %s\n", time.Unix(int64(newestInt), 0), time.Unix(int64(oldestInt), 0))
+	fmt.Printf("Oldest/newest key:                 %s / %s\n", metrics.Oldest, metrics.Newest)
+	fmt.Printf("TS of oldest/newest key:           %s / %s\n", time.Unix(int64(oldestInt), 0), time.Unix(int64(newestInt), 0))
 	fmt.Printf("Time diff btw keys:                %d secs (%3.2fh)\n", keydiff, (float64(keydiff) / 3600.0))
 }
 
