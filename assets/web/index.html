@@ -25,6 +25,9 @@
           <th>Description</th>
           <th>Uptime</th>
           <th>Loadavg</th>
+          <th>Mem (Total)</th>
+          <th>Mem (Unused)</th>
+          <th>Mem (Avail)</th>
         </thead>
         <tbody id="machdata">
         </tbody>
@@ -118,16 +121,37 @@
             var tdUp = document.createElement("td");
             var upTxt = document.createTextNode(`${upd}d ${uph}:${upm}:${ups}`);
             tdUp.appendChild(upTxt);
-            // mach desc
+            // load average
             var tdLdavg = document.createElement("td");
             var ldavgTxt = document.createTextNode(`${metric['Ldavg'][0]}, ${metric['Ldavg'][1]}, ${metric['Ldavg'][2]}`);
             tdLdavg.appendChild(ldavgTxt);
             tdLdavg.style.textAlign = 'right';
+            // memory, total
+            var memtot = metric['Mem'][0] / 1024 / 1024;
+            var tdMemt = document.createElement("td");
+            var memtTxt = document.createTextNode(`${memtot.toFixed(2)}GB`);
+            tdMemt.appendChild(memtTxt);
+            tdMemt.style.textAlign = 'right';
+            // memory, unused
+            var memun = metric['Mem'][1] / metric['Mem'][0] * 100 
+            var tdMemun = document.createElement("td");
+            var memunTxt = document.createTextNode(`${memun.toFixed(2)}%`);
+            tdMemun.appendChild(memunTxt);
+            tdMemun.style.textAlign = 'right';
+            // memory, available
+            var memav = metric['Mem'][2] / metric['Mem'][0] * 100 
+            var tdMemav = document.createElement("td");
+            var memavTxt = document.createTextNode(`${memav.toFixed(2)}%`);
+            tdMemav.appendChild(memavTxt);
+            tdMemav.style.textAlign = 'right';
             // add all to the row
             tr.appendChild(tdName);
             tr.appendChild(tdDesc);
             tr.appendChild(tdUp);
             tr.appendChild(tdLdavg);
+            tr.appendChild(tdMemt);
+            tr.appendChild(tdMemun);
+            tr.appendChild(tdMemav);
             tbody.appendChild(tr);
         }
 
