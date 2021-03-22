@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.0.2/echarts.min.js" integrity="sha512-t9GZbGKCH5MuYUFsq5AdrhllT0kdnc2fNMizKDgLXBBXgHP2dXxjRPOzYJauAXW9OXLlSYELUqWD30k7cb0Mkg==" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <!-- preparing a DOM with width and height for ECharts -->
+    <div id="cputemps" style="width: 99%; height:200px;"></div>
+  </body>
+  <script>
+    var chartDom = document.getElementById('cputemps');
+    var myChart = echarts.init(chartDom);
+    var option;
+    option = {
+        title: { text: 'CPU Temperatures' },
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['node01', 'node02', 'node03'] },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: {
+            type: 'time',
+            boundaryGap: ['20%', '20%'],
+            min: 'dataMin',
+            max: 'dataMax'
+        },
+        yAxis: { type: 'value' },
+        dataset: {
+            source: [
+                [ 1616359143, 1, 2, 3 ],
+                [ 1616363000, 2, 3, 1 ],
+                [ 1616366000, null, 12, 4 ],
+                [ 1616369000, 5, 5, 5 ],
+                [ 1616373000, 8, 1, null ],
+                [ 1616376000, 9, 2, 4 ],
+                [ 1616379000, 8, null, 4 ],
+                [ 1616383000, 8, 12, 6 ],
+                [ 1616386000, 1, 2, 3 ],
+                [ 1616389000, 4, 3, 2 ]
+            ],
+            dimensions: [ 'timestamp', 'node01', 'node02', 'node03' ]
+        },
+        series: [
+            {
+                name: 'node01',
+                type: 'line',
+                encode: { x: 'timestamp', y: 'node01' }
+            },
+            {
+                name: 'node02',
+                type: 'line',
+                encode: { x: 'timestamp', y: 'node02' }
+            },
+            {
+                name: 'node03',
+                type: 'line',
+                encode: { x: 'timestamp', y: 'node03' }
+            }
+        ]
+    };
+
+    option && myChart.setOption(option);
+  </script>
+</html>
