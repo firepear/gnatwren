@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -28,6 +29,22 @@ var (
 )
 
 
+func exportJSON() error {
+	cpuTemps, err := dbGetCPUTemps()
+	if err != nil {
+		return err
+	}
+	var sb strings.Builder
+	sb.WriteString(config.Files.JsonLoc)
+	sb.WriteString("/cputemps.json")
+	cpuTempsj, _ := json.Marshal(cpuTemps)
+	err = os.WriteFile(sb.String(), cpuTempsj, 0644)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 func main() {
 	// find out where the gwagent config file is and read it in
 	var configfile string
@@ -44,24 +61,24 @@ func main() {
 	}
 
 	// configure the petrel server
-	c := &petrel.ServerConfig{
+	pc := &petrel.ServerConfig{
                 Sockname: config.BindAddr,
                 Msglvl: petrel.Error,
 		Timeout: 5,
         }
 	// and instantiate it
-	s, err := petrel.TCPServer(c)
+	petrel, err := petrel.TCPServer(pc)
         if err != nil {
                 log.Printf("could not instantiate Server: %s\n", err)
                 os.Exit(1)
         }
 	// then register handler function(s)
-	err = s.Register("agentupdate", "blob", agentUpdate)
+	err = petrel.Register("agentupdate", "blob", agentUpdate)
         if err != nil {
                 log.Printf("failed to register responder 'agentupdate': %s", err)
                 os.Exit(1)
         }
-	err = s.Register("query", "blob", queryHandler)
+	err = petrel.Register("query", "blob", queryHandler)
         if err != nil {
                 log.Printf("failed to register responder 'status': %s", err)
                 os.Exit(1)
@@ -82,6 +99,15 @@ func main() {
 	dbgctick := time.NewTicker(2700 * time.Second)
 	defer dbgctick.Stop()
 
+	// do an initial export of data as it stands
+	err = exportJSON()
+	if err != nil {
+		log.Printf("couldn't export to json: %s\n", err)
+	}
+	// then launch a ticker to export every 5 min
+	jsontick := time.NewTicker(300 * time.Second)
+	defer jsontick.Stop()
+
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
@@ -92,29 +118,33 @@ func main() {
 	keepalive := true
         for keepalive {
                 select {
-                case msg := <-s.Msgr:
+                case msg := <-petrel.Msgr:
                         // handle messages from petrel
 			switch msg.Code {
 			case 199: // petrel quit
-				log.Printf("petrel server has shut down. last Msg received was: %s", msg)
+				log.Printf("petrel server has shut down. last msg received was: %s", msg)
 				keepalive = false
 				break
 			case 599: // petrel network error (listener socket died)
-				s.Quit()
+				petrel.Quit()
 				keepalive = false
 				break
 			default:
 				// anything else we'll log to the console
 				log.Printf("petrel: %s", msg)
 			}
+		case <-jsontick.C:
+			err := exportJSON()
+			if err != nil {
+				log.Printf("couldn't export to json: %s\n", err)
+			}
 		case <-dbgctick.C:
 			// DB garbage collection
 			_ = db.RunValueLogGC(0.7)
 		case <-sigchan:
-                        // OS signal. tell petrel to shut down, then
-                        // shut ourselves down
+                        // OS signal. tell petrel to shut down, then quit
                         log.Println("OS signal received; shutting down")
-                        s.Quit()
+                        petrel.Quit()
 			keepalive = false
 			break
                 }

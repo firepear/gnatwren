@@ -3,6 +3,7 @@ package main
 import (
 	//"log"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -73,12 +74,54 @@ func dbGetCurrentStats() (map[string]data.AgentStatus, error) {
 	return metrics, err
 }
 
+func dbGetCPUTemps() (map[int64]map[string]string, error) {
+	// map of temps (by timestamp, by host), to be returned
+	t := map[int64]map[string]string{}
+	// json goes here
+	m := data.AgentPayload{}
+	// timestamp, as a string, one hour ago. we don't want
+	// anything older than this
+	tlimit := strconv.Itoa(int(time.Now().Unix()) - 3600)
+
+
+	err := db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchValues = false
+		it := txn.NewIterator(opts)
+		defer it.Close()
+
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			k := item.Key()
+			// skip keys that happened more than 1h ago
+			if string(k) < tlimit {
+				continue
+			}
+			err := item.Value(func(v []byte) error {
+				err := json.Unmarshal(v, &m)
+				if err != nil {
+					return err
+				}
+				if t[m.TS] == nil {
+					t[m.TS] = map[string]string{}
+				}
+				t[m.TS][m.Host] = fmt.Sprintf("%5.2f", m.Cpu.Temp)
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return t, err
+}
+
 func dbGetDBStats() (data.DBStatus, error) {
 	var dbs data.DBStatus
 
 	err := db.View(func(txn *badger.Txn) error {
-		opts := badger.DefaultIteratorOptions
-		it := txn.NewIterator(opts)
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
 
 		for it.Rewind(); it.Valid(); it.Next() {
