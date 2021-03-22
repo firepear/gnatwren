@@ -30,11 +30,24 @@ var (
 
 
 func exportJSON() error {
-	cpuTemps, err := dbGetCPUTemps()
+	machStats, err := dbGetCurrentStats()
 	if err != nil {
 		return err
 	}
 	var sb strings.Builder
+	sb.WriteString(config.Files.JsonLoc)
+	sb.WriteString("/machines.json")
+	machStatsj, _ := json.Marshal(machStats)
+	err = os.WriteFile(sb.String(), machStatsj, 0644)
+	if err != nil {
+		return err
+	}
+
+	cpuTemps, err := dbGetCPUTemps()
+	if err != nil {
+		return err
+	}
+	sb.Reset()
 	sb.WriteString(config.Files.JsonLoc)
 	sb.WriteString("/cputemps.json")
 	cpuTempsj, _ := json.Marshal(cpuTemps)

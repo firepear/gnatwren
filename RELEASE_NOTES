@@ -1,3 +1,15 @@
+0.8.0 - 2021-03-22
+--------------------------------------------------------------------
+
+    * gwgather now exports CPU temp data to a JSON file every 5
+      minutes
+
+    * An HTML page which renders CPU temp data using the echarts lib
+      has been added -- the beginning of data visualization efforts
+
+    * 'dbstatus' added to gwquery
+
+
 0.7.0 - 2021-03-21
 --------------------------------------------------------------------
 
