@@ -43,12 +43,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-
-	// set up a channel to handle termination events
-	sigchan := make(chan os.Signal, 1)
-	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
-
-
 	// configure the petrel server
 	c := &petrel.ServerConfig{
                 Sockname: config.BindAddr,
@@ -61,7 +55,6 @@ func main() {
                 log.Printf("could not instantiate Server: %s\n", err)
                 os.Exit(1)
         }
-	log.Printf("gwagent server instantiated")
 	// then register handler function(s)
 	err = s.Register("agentupdate", "blob", agentUpdate)
         if err != nil {
@@ -89,6 +82,12 @@ func main() {
 	dbgctick := time.NewTicker(2700 * time.Second)
 	defer dbgctick.Stop()
 
+	// set up a channel to handle termination events
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+
+
+	log.Printf("gwagent server up and listening")
 
 	keepalive := true
         for keepalive {

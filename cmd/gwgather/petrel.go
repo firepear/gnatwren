@@ -58,10 +58,10 @@ func queryHandler (args [][]byte) ([]byte, error) {
 		curMetrics, err := dbGetCurrentStats()
 		respb, err := json.Marshal(curMetrics)
 		return respb, err
-		//case "dbstatus":
-		//dbMetrics, err := dbGetDBStats()
-		//respb, err := json.Marshal(curMetrics)
-		//return respb, err
+	case "dbstatus":
+		dbMetrics, err := dbGetDBStats()
+		respb, err := json.Marshal(dbMetrics)
+		return respb, err
 	}
 	return fresp, err
 }

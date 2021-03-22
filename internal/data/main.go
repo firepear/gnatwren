@@ -70,3 +70,11 @@ type CPUdata struct {
 	Cores map[string]string
 	Temp float64
 }
+
+// DBStatus holds selected facts about the current state of the
+// database
+type DBStatus struct {
+	Newest string
+	Oldest string
+	Count int
+}

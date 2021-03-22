@@ -72,3 +72,26 @@ func dbGetCurrentStats() (map[string]data.AgentStatus, error) {
 	}
 	return metrics, err
 }
+
+func dbGetDBStats() (data.DBStatus, error) {
+	var dbs data.DBStatus
+
+	err := db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		it := txn.NewIterator(opts)
+		defer it.Close()
+
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			k := item.Key()
+			if dbs.Count == 0 {
+				dbs.Oldest = string(k)
+			} else {
+				dbs.Newest = string(k)
+			}
+			dbs.Count++
+		}
+		return nil
+	})
+	return dbs, err
+}
