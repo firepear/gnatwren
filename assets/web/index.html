@@ -4,22 +4,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.0.2/echarts.min.js" integrity="sha512-t9GZbGKCH5MuYUFsq5AdrhllT0kdnc2fNMizKDgLXBBXgHP2dXxjRPOzYJauAXW9OXLlSYELUqWD30k7cb0Mkg==" crossorigin="anonymous"></script>
     <style>
       body {background-color: #aaa; font-family: sans-serif; }
+      h2 { padding-left: 5%; }
+      h3 { margin-top: 0; padding-top: 0; }
+      th { background-color: #ccc; text-align: left; padding: 5px; }
+      td { padding: 5px; }
+      td.first { background-color: #ccc; }
+      tr:hover { background-color: #cdf; }
       .chart { background-color: #fff; border: medium solid #69f; border-radius: 10px;
                margin-left: 5%; margin-right: 5%; margin-bottom: 1%; padding: 10px;
                width: 90%; }
     </style>
   </head>
   <body>
-    <div class="chart" id="cputemps" style="height:350px;"></div>
-    <div class="chart" id="cputemps">
-      <p>Foo.</p>
+    <h2>Homefarm status</h2>
+    <div class="chart">
+      <h3>Node system data</h3>
+      <table>
+        <thead>
+          <th>Node</th>
+          <th>Description</th>
+          <th>Uptime</th>
+          <th>Loadavg</th>
+        </thead>
+        <tbody id="machdata">
+        </tbody>
+      </table>
     </div>
+    <div class="chart" id="cputemps" style="height:350px;"></div>
   </body>
   <script>
-    var nodes = ["node01", "node02", "node03", "node04", "node05", "node06",
-                 "nodepi01", "nodepi02", "nodepi03", "nodepi04"];
+    var nodes;
+    var metrics;
     var cpuTReq = new XMLHttpRequest();
     cpuTReq.addEventListener("load", plotCPUTemps);
+    var machSReq = new XMLHttpRequest();
+    machSReq.addEventListener("load", plotMachStats);
 
     function plotCPUTemps() {
         // reset cpuT.series and dimensions
@@ -59,28 +78,85 @@
         cpuTReq.send();
     }
 
+    function plotMachStats() {
+        const tbody = document.getElementById("machdata");
+        while (tbody.firstChild) {
+            tbody.removeChild(tbody.lastChild);
+        }
+
+        metrics = JSON.parse(this.responseText);
+
+        nodes = [];
+        for (let host in metrics) {
+            nodes.push(host);
+        }
+        nodes.sort();
+
+        for (let i in nodes) {
+            var metric = metrics[nodes[i]]['Payload'];
+            var tr = document.createElement("tr");
+            // machine name
+            var tdName = document.createElement("td");
+            var nameTxt = document.createTextNode(`${nodes[i]}`);
+            tdName.appendChild(nameTxt);
+            tdName.setAttribute('class', 'first');
+            // mach desc
+            var tdDesc = document.createElement("td");
+            var descTxt = document.createTextNode(`${metric['Cpu']['Name']} (${ Object.keys(metric['Cpu']['Cores']).length } threads)`);
+            tdDesc.appendChild(descTxt);
+            // uptime
+            var uptime = metric['Upt'];
+            var upd = Math.floor(uptime / 86400);
+            uptime = uptime - upd * 86400;
+            var uph = Math.floor(uptime / 3600);
+            if (uph < 10) { uph = `0${uph}` }
+            uptime = uptime - uph * 3600;
+            var upm = Math.floor(uptime / 60);
+            if (upm < 10) { upm = `0${upm}` }
+            var ups = Math.floor(uptime - upm * 60);
+            if (ups < 10) { ups = `0${ups}` }
+            var tdUp = document.createElement("td");
+            var upTxt = document.createTextNode(`${upd}d ${uph}:${upm}:${ups}`);
+            tdUp.appendChild(upTxt);
+            // mach desc
+            var tdLdavg = document.createElement("td");
+            var ldavgTxt = document.createTextNode(`${metric['Ldavg'][0]}, ${metric['Ldavg'][1]}, ${metric['Ldavg'][2]}`);
+            tdLdavg.appendChild(ldavgTxt);
+            tdLdavg.style.textAlign = 'right';
+            // add all to the row
+            tr.appendChild(tdName);
+            tr.appendChild(tdDesc);
+            tr.appendChild(tdUp);
+            tr.appendChild(tdLdavg);
+            tbody.appendChild(tr);
+        }
+
+        // now that nodes is populated, we can draw graphs
+        getCPUTemps();
+    }
+
+    function getMachStats() {
+        machSReq.open("GET", "http://localhost:9099/gnatwren/machines.json");
+        machSReq.send();
+    }
+
     // one of these for every chart
     var cpuTDom = document.getElementById('cputemps');
     var cpuTChart = echarts.init(cpuTDom);
     var cpuT;
     // set options
     cpuT = {
-        title: { text: 'CPU Temperatures, last hour' },
+        title: { text: 'CPU temperatures, last hour' },
         tooltip: { trigger: 'axis' },
         grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
         xAxis: { type: 'time', boundaryGap: ['20%', '20%'], min: 'dataMin', max: 'dataMax' },
         yAxis: { type: 'value', min: 'dataMin' },
-        // the following values will change over time
-        //legend: { data: ['node01', 'node02', 'node03'] },
         series: [],
         dataset: {
-            // timestamps are in milliseconds; multiply by 1000 from DB
             source: [],
-            //[ 1616359143000, 1, 2, 3 ],
             dimensions: ['timestamp']
         }
     };
-    // apply and render
-    getCPUTemps();
+    getMachStats();
   </script>
 </html>
