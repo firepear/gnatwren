@@ -20,6 +20,12 @@ Reporting of the following data is implemented for x86 and Raspberry Pi:
 
 No events are yet being detected.
 
+## Visualization
+
+Not much yet, but it's in-work, along with everything else:
+
+[!https://i.imgur.com/iIJYA4Z.png]
+
 ## Installation
 
 My project [Homefarm](https://github.com/firepear/homefarm), has a
