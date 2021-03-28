@@ -24,7 +24,7 @@ No events are yet being detected.
 
 Not much yet, but it's in-work, along with everything else:
 
-[!Early viz](https://i.imgur.com/iIJYA4Z.png)
+![Early viz](https://i.imgur.com/iIJYA4Z.png)
 
 ## Installation
 
