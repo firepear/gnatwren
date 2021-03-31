@@ -25,9 +25,11 @@
           <th>Description</th>
           <th>Uptime</th>
           <th>Loadavg</th>
-          <th>Mem (Total)</th>
-          <th>Mem (Unused)</th>
-          <th>Mem (Avail)</th>
+          <th>Mem Total</th>
+          <th>Mem Unused</th>
+          <th>Mem Avail</th>
+          <th>CPU Avg</th>
+          <th>CPU 1h&uarr;/&darr;</th>
         </thead>
         <tbody id="machdata">
         </tbody>
@@ -135,17 +137,28 @@
             tdMemt.appendChild(memtTxt);
             tdMemt.style.textAlign = 'right';
             // memory, unused
-            var memun = metric['Mem'][1] / metric['Mem'][0] * 100 
+            var memun = metric['Mem'][1] / metric['Mem'][0] * 100
             var tdMemun = document.createElement("td");
             var memunTxt = document.createTextNode(`${memun.toFixed(2)}%`);
             tdMemun.appendChild(memunTxt);
             tdMemun.style.textAlign = 'right';
             // memory, available
-            var memav = metric['Mem'][2] / metric['Mem'][0] * 100 
+            var memav = metric['Mem'][2] / metric['Mem'][0] * 100
             var tdMemav = document.createElement("td");
             var memavTxt = document.createTextNode(`${memav.toFixed(2)}%`);
             tdMemav.appendChild(memavTxt);
             tdMemav.style.textAlign = 'right';
+            // cpu avg freq
+            var cpuav = 0;
+            var cputot = 0
+            for (let j in metric['Cpu']['Cores']) {
+                cputot += Number(metric['Cpu']['Cores'][j]);
+            }
+            cpuav = Math.floor(cputot / Object.keys(metric['Cpu']['Cores']).length);
+            var tdCpuav = document.createElement("td");
+            var cpuavTxt = document.createTextNode(`${cpuav}MHz`);
+            tdCpuav.appendChild(cpuavTxt);
+            tdCpuav.style.textAlign = 'right';
             // add all to the row
             tr.appendChild(tdName);
             tr.appendChild(tdDesc);
@@ -154,6 +167,7 @@
             tr.appendChild(tdMemt);
             tr.appendChild(tdMemun);
             tr.appendChild(tdMemav);
+            tr.appendChild(tdCpuav);
             tbody.appendChild(tr);
         }
 
