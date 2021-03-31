@@ -7,9 +7,9 @@
       h2 { padding-left: 5%; }
       h3 { margin-top: 0; padding-top: 0; }
       th { background-color: #ccc; text-align: left; padding: 5px; }
-      td { padding: 5px; }
+      td { padding: 5px; background-color: #eee; }
       td.first { background-color: #ccc; }
-      tr:hover { background-color: #cdf; }
+      tr:hover > td { background-color: #cdf; }
       .chart { background-color: #fff; border: medium solid #69f; border-radius: 10px;
                margin-left: 5%; margin-right: 5%; margin-bottom: 1%; padding: 10px;
                width: 90%; }
@@ -26,8 +26,7 @@
           <th>Uptime</th>
           <th>Loadavg</th>
           <th>Mem Total</th>
-          <th>Mem Unused</th>
-          <th>Mem Avail</th>
+          <th>Mem Free / Avail</th>
           <th>CPU Avg</th>
           <th>CPU 1h&uarr;/&darr;</th>
         </thead>
@@ -139,15 +138,11 @@
             // memory, unused
             var memun = metric['Mem'][1] / metric['Mem'][0] * 100
             var tdMemun = document.createElement("td");
-            var memunTxt = document.createTextNode(`${memun.toFixed(2)}%`);
-            tdMemun.appendChild(memunTxt);
-            tdMemun.style.textAlign = 'right';
             // memory, available
             var memav = metric['Mem'][2] / metric['Mem'][0] * 100
-            var tdMemav = document.createElement("td");
-            var memavTxt = document.createTextNode(`${memav.toFixed(2)}%`);
-            tdMemav.appendChild(memavTxt);
-            tdMemav.style.textAlign = 'right';
+            var memunTxt = document.createTextNode(`${memun.toFixed(2)}% / ${memav.toFixed(2)}%`);
+            tdMemun.appendChild(memunTxt);
+            tdMemun.style.textAlign = 'right';
             // cpu avg freq
             var cpuav = 0;
             var cputot = 0
@@ -166,7 +161,6 @@
             tr.appendChild(tdLdavg);
             tr.appendChild(tdMemt);
             tr.appendChild(tdMemun);
-            tr.appendChild(tdMemav);
             tr.appendChild(tdCpuav);
             tbody.appendChild(tr);
         }
