@@ -27,6 +27,7 @@
           <th>Loadavg</th>
           <th>Mem Total</th>
           <th>Mem Free / Avail</th>
+          <th>CPU Temp</th>
           <th>CPU Avg</th>
           <th>CPU 1h&uarr;/&darr;</th>
         </thead>
@@ -35,13 +36,12 @@
       </table>
     </div>
     <div class="chart" id="cputemps" style="height:350px;"></div>
+    <div class="chart" id="cpuavg" style="height:350px;"></div>
   </body>
   <script>
     var url = "http://localhost:9099/gnatwren";
     var nodes;
     var metrics;
-    var cpuTReq = new XMLHttpRequest();
-    cpuTReq.addEventListener("load", plotCPUTemps);
     var machSReq = new XMLHttpRequest();
     machSReq.addEventListener("load", plotMachStats);
 
@@ -143,6 +143,11 @@
             var memunTxt = document.createTextNode(`${memun.toFixed(2)}% / ${memav.toFixed(2)}%`);
             tdMemun.appendChild(memunTxt);
             tdMemun.style.textAlign = 'right';
+            // cpu temp
+            var tdCput = document.createElement("td");
+            var cputTxt = document.createTextNode(`${Number(metric['Cpu']['Temp']).toFixed(2)}C`);
+            tdCput.appendChild(cputTxt);
+            tdCput.style.textAlign = 'right';
             // cpu avg freq
             var cpuav = 0;
             var cputot = 0
@@ -154,6 +159,9 @@
             var cpuavTxt = document.createTextNode(`${cpuav}MHz`);
             tdCpuav.appendChild(cpuavTxt);
             tdCpuav.style.textAlign = 'right';
+            // cpu hi/lo
+            var tdCpuhl = document.createElement("td");
+            tdCpuhl.id = "cpuhl";
             // add all to the row
             tr.appendChild(tdName);
             tr.appendChild(tdDesc);
@@ -161,7 +169,9 @@
             tr.appendChild(tdLdavg);
             tr.appendChild(tdMemt);
             tr.appendChild(tdMemun);
+            tr.appendChild(tdCput);
             tr.appendChild(tdCpuav);
+            tr.appendChild(tdCpuhl);
             tbody.appendChild(tr);
         }
 
@@ -191,6 +201,28 @@
             dimensions: ['timestamp']
         }
     };
+    var cpuADom = document.getElementById('cpuavg');
+    var cpuAChart = echarts.init(cpuADom);
+    var cpuA;
+    // set options
+    cpuA = {
+        title: { text: 'CPU avg clock, last hour' },
+        tooltip: { trigger: 'axis' },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'time', boundaryGap: ['20%', '20%'], min: 'dataMin', max: 'dataMax' },
+        yAxis: { type: 'value', min: 'dataMin' },
+        series: [],
+        dataset: {
+            source: [],
+            dimensions: ['timestamp']
+        }
+    };
+
+    var cpuTReq = new XMLHttpRequest();
+    cpuTReq.addEventListener("load", plotCPUTemps);
+    var cpuAReq = new XMLHttpRequest();
+    cpuAReq.addEventListener("load", plotCPUAvgs);
+
     getMachStats();
     setInterval(getMachStats, 300000);
   </script>
