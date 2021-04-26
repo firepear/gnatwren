@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -12,6 +13,14 @@ import (
 	"github.com/firepear/gnatwren/internal/data"
 )
 
+
+func Arch() string {
+	arch, err := exec.Command("uname -m").Output()
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	return string(arch)
+}
 
 // Cpuinfo scans /proc/cpuinfo and extracts values for the
 // cpu name, Tdie temp, and the current speed of every core

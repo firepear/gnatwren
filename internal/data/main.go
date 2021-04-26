@@ -55,6 +55,7 @@ type AgentStatus struct {
 // AgentPayload represents one sample, as collected by gwagent.
 type AgentPayload struct {
 	Host string
+	Arch string
 	TS int64
 	Cpu CPUdata
 	Mem [3]int

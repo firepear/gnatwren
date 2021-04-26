@@ -24,6 +24,8 @@ var (
 	nl = []byte("\n")
 	mux = &sync.RWMutex{}
 	stow = "/var/run/gnatwren/agent_metrics.log"
+	arch = ""
+	hostname = ""
 )
 
 
@@ -31,7 +33,8 @@ var (
 func gatherMetrics() ([]byte, error) {
 	metrics := data.AgentPayload{}
 
-	metrics.Host, _ = os.Hostname()
+	metrics.Arch = arch
+	metrics.Host = hostname
 	metrics.TS = time.Now().Unix()
 	metrics.Cpu = hwmon.Cpuinfo()
 	metrics.Mem = hwmon.Meminfo()
@@ -176,6 +179,11 @@ func main() {
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+
+
+	// get machine architecture and hostname, once
+	arch = hwmon.Arch()
+	hostname, _ = os.Hostname()
 
 	// handle any saved metrics, synchronously, if we have them
 	c := make(chan error)
