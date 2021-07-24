@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"log"
@@ -13,21 +14,22 @@ import (
 
 	"github.com/firepear/petrel"
 	"github.com/firepear/gnatwren/internal/data"
-	badger "github.com/dgraph-io/badger/v3"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 
 var (
 	// gwgather config
 	config data.GatherConfig
-	// global placeholder for the db conn
-	db *badger.DB
 	// nodeStatus holds the last check-in time of nodes running
 	// agents. mux is its lock
 	nodeStatus = map[string][2]int64{}
 	mux sync.RWMutex
+	// db handle
+	db *sql.DB
+	// terminates event loop when false
+	keepalive = true
 )
-
 
 func exportJSON() error {
 	machStats, err := dbGetCurrentStats()
@@ -97,20 +99,15 @@ func main() {
                 os.Exit(1)
         }
 
-
-	// Open the Badger database
-	options := badger.DefaultOptions(config.DB.Loc)
-	options.Logger = nil
-	db, err = badger.Open(options)
+	// initialize database
+	db, err := dbSetup()
 	if err != nil {
-		log.Fatalf("badger: can't open db: %s", err)
+		log.Fatalf("sqlite: can't init db: %s", err)
 	}
 	defer db.Close()
-	// GC the DB
-	_ = db.RunValueLogGC(0.7)
-	// and launch a ticker for future GC
-	dbgctick := time.NewTicker(2700 * time.Second)
-	defer dbgctick.Stop()
+	// TODO tickers for hourly table rollover (set ticker for 5
+	// minutes, but routine is a no-op unless enough time has
+	// passed)
 
 	// do an initial export of data as it stands
 	err = exportJSON()
@@ -128,7 +125,6 @@ func main() {
 
 	log.Printf("gwagent server up and listening")
 
-	keepalive := true
         for keepalive {
                 select {
                 case msg := <-petrel.Msgr:
@@ -151,9 +147,6 @@ func main() {
 			if err != nil {
 				log.Printf("couldn't export to json: %s\n", err)
 			}
-		case <-dbgctick.C:
-			// DB garbage collection
-			_ = db.RunValueLogGC(0.7)
 		case <-sigchan:
                         // OS signal. tell petrel to shut down, then quit
                         log.Println("OS signal received; shutting down")

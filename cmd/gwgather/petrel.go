@@ -35,12 +35,12 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 		newTS[1] = nodeStatus[upd.Host][1]
 	}
 	nodeStatus[upd.Host] = newTS
-	mux.Unlock()
 
 	// send data to the DB
 	err = dbUpdate(args[0], upd)
+	mux.Unlock()
 	if err != nil {
-		log.Printf("agentUpdate: badgerdb err: %s", err)
+		log.Printf("agentUpdate: db err: %s", err)
 	}
 	return fresp, err
 }
