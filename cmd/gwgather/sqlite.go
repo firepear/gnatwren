@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	//"strconv"
+	"log"
 	"time"
 
 	"github.com/firepear/gnatwren/internal/data"
@@ -62,6 +62,100 @@ func dbLoadNodeStatus() {
 	}
 }
 
+func dbPruneMigrate() {
+	var c int64
+ 	// timestamp, one hour ago
+ 	tlimit := time.Now().Unix() - 3600
+	// if nothing newer than tlimit exists in the current table,
+	// there haven't been DB updates in a while; do nothing
+	row := db.QueryRow("SELECT count(ts) FROM current WHERE ts >= ?", tlimit)
+	if err := row.Scan(&c); err != nil {
+		return
+	}
+	if c == 0 {
+		return
+	}
+
+	// we're still here, so copy nodeStatus
+	nodeCopy := map[string][2]int64{}
+	mux.RLock()
+	for k, v := range nodeStatus {
+		nodeCopy[k] = v
+	}
+	mux.RUnlock()
+
+	// now get the newest timestamp from the hourly table and see
+	// if it's at least an hour old
+	row = db.QueryRow("SELECT ts FROM hourly ORDER BY ts DESC LIMIT 1")
+	if err := row.Scan(&c); err != nil {
+		return
+	}
+	if c > tlimit {
+		// for each host, grab the newest row from common
+		// which is MORE than an hour old and copy it to the
+		// hourly table
+		for host, _ := range nodeCopy {
+			var (
+				q = "SELECT ts, data FROM current WHERE host = ? AND ts >= ? ORDER BY ts DESC LIMIT 1"
+				ts int64
+				d string
+			)
+			row = db.QueryRow(q, host, tlimit)
+			if err := row.Scan(&ts, &d); err != nil {
+				continue
+			}
+			stmt, err := db.Prepare("INSERT INTO hourly VALUES (?, ?, ?)")
+			if err != nil {
+				continue
+			}
+			stmt.Exec(ts, host, d)
+		}
+		// prune current
+		stmt, err := db.Prepare("DELETE FROM current WHERE ts >= ?")
+		if err != nil {
+			log.Printf("db: can't prune current table: %s\n", err)
+		}
+		stmt.Exec()
+	}
+
+	// finally, do the same thing but for the daily table
+	tlimit = tlimit - 169200 // go back another 47h
+	row = db.QueryRow("SELECT ts FROM hourly ORDER BY ts DESC LIMIT 1")
+	if err := row.Scan(&c); err != nil {
+		return
+	}
+	if c > tlimit {
+		for host, _ := range nodeCopy {
+			var (
+				q = "SELECT ts, data FROM hourly WHERE host = ? AND ts >= ? ORDER BY ts DESC LIMIT 1"
+				ts int64
+				d string
+			)
+			row = db.QueryRow(q, host, tlimit)
+			if err := row.Scan(&ts, &d); err != nil {
+				continue
+			}
+			stmt, err := db.Prepare("INSERT INTO daily VALUES (?, ?, ?)")
+			if err != nil {
+				continue
+			}
+			stmt.Exec(ts, host, d)
+		}
+		// prune hourly and daily
+		stmt, err := db.Prepare("DELETE FROM hourly WHERE ts >= ?")
+		if err != nil {
+			log.Printf("db: can't prune hourly table: %s\n", err)
+		}
+		stmt.Exec()
+		tlimit = tlimit - 5011200 // go back another 58 days
+		stmt, err = db.Prepare("DELETE FROM daily WHERE ts >= ?")
+		if err != nil {
+			log.Printf("db: can't prune daily table: %s\n", err)
+		}
+		stmt.Exec()
+	}
+}
+
 func dbUpdate(payload []byte, upd data.AgentPayload) error {
  	// insert payload (we don't have to care about concurrency
  	// here; that's taken care of by a mutex in petrel.go)
@@ -113,8 +207,8 @@ func dbGetCPUTemps() (map[int64]map[string]string, error) {
  	t := map[int64]map[string]string{}
  	// json goes here
  	m := data.AgentPayload{}
- 	// timestamp, as a string, one hour ago. we don't want
- 	// anything older than this
+ 	// timestamp, one hour ago. we don't want anything older than
+ 	// this
  	tlimit := time.Now().Unix() - 3600
 
 	rows, err := db.Query("SELECT data FROM current WHERE ts >= ?", tlimit)

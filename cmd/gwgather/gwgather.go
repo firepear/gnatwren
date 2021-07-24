@@ -106,9 +106,11 @@ func main() {
 	}
 	dbLoadNodeStatus()
 	defer db.Close()
-	// TODO tickers for hourly table rollover (set ticker for 5
+	// launch ticker for hourly table rollover (set ticker for 10
 	// minutes, but routine is a no-op unless enough time has
 	// passed)
+	prunetick := time.NewTicker(600 * time.Second)
+	defer prunetick.Stop()
 
 	// do an initial export of data as it stands
 	err = exportJSON()
@@ -148,6 +150,8 @@ func main() {
 			if err != nil {
 				log.Printf("couldn't export to json: %s\n", err)
 			}
+		case <-prunetick.C:
+			dbPruneMigrate()
 		case <-sigchan:
                         // OS signal. tell petrel to shut down, then quit
                         log.Println("OS signal received; shutting down")
