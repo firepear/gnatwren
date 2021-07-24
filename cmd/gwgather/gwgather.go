@@ -33,6 +33,7 @@ var (
 
 func exportJSON() error {
 	machStats, err := dbGetCurrentStats()
+	log.Println(machStats)
 	if err != nil {
 		return err
 	}
@@ -90,20 +91,21 @@ func main() {
 	// then register handler function(s)
 	err = petrel.Register("agentupdate", "blob", agentUpdate)
         if err != nil {
-                log.Printf("failed to register responder 'agentupdate': %s", err)
+                log.Printf("failed to register responder 'agentupdate': %s\n", err)
                 os.Exit(1)
         }
 	err = petrel.Register("query", "blob", queryHandler)
         if err != nil {
-                log.Printf("failed to register responder 'status': %s", err)
+                log.Printf("failed to register responder 'status': %s\n", err)
                 os.Exit(1)
         }
 
 	// initialize database
-	db, err := dbSetup()
+	db, err = dbSetup()
 	if err != nil {
 		log.Fatalf("sqlite: can't init db: %s", err)
 	}
+	dbLoadNodeStatus()
 	defer db.Close()
 	// TODO tickers for hourly table rollover (set ticker for 5
 	// minutes, but routine is a no-op unless enough time has
@@ -123,7 +125,7 @@ func main() {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
 
-	log.Printf("gwagent server up and listening")
+	log.Println("gwagent server up and listening")
 
         for keepalive {
                 select {
@@ -131,7 +133,7 @@ func main() {
                         // handle messages from petrel
 			switch msg.Code {
 			case 199: // petrel quit
-				log.Printf("petrel server has shut down. last msg received was: %s", msg)
+				log.Printf("petrel server has shut down. last msg received was: %s\n", msg)
 				keepalive = false
 				break
 			case 599: // petrel network error (listener socket died)
@@ -140,7 +142,7 @@ func main() {
 				break
 			default:
 				// anything else we'll log to the console
-				log.Printf("petrel: %s", msg)
+				log.Printf("petrel: %s\n", msg)
 			}
 		case <-jsontick.C:
 			err := exportJSON()
