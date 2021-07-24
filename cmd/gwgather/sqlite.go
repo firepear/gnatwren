@@ -84,77 +84,103 @@ func dbPruneMigrate() {
 	}
 	mux.RUnlock()
 
-	// now get the newest timestamp from the hourly table and see
-	// if it's at least an hour old
+	// now get the newest timestamp from the hourly table
+	c = 0
 	row = db.QueryRow("SELECT ts FROM hourly ORDER BY ts DESC LIMIT 1")
-	if err := row.Scan(&c); err != nil {
-		return
-	}
-	if c > tlimit {
-		// for each host, grab the newest row from common
-		// which is MORE than an hour old and copy it to the
-		// hourly table
+	switch err := row.Scan(&c); err {
+	case sql.ErrNoRows:
+		// treat an empty table as a nil
+		fallthrough
+	case nil:
+		//  do nothing if the most recent timestamp is
+		//  less than 1h old AND NOT zero (empty table)
+		if c <= tlimit && c != 0 {
+			break
+		}
+		// for each host, grab the newest row from common --
+		// since we test for the most recent row in hourly
+		// being at least 1h old -- and copy to hourly
 		for host, _ := range nodeCopy {
 			var (
-				q = "SELECT ts, data FROM current WHERE host = ? AND ts >= ? ORDER BY ts DESC LIMIT 1"
+				q = "SELECT ts, data FROM current WHERE host = ? ORDER BY ts DESC LIMIT 1"
 				ts int64
 				d string
 			)
 			row = db.QueryRow(q, host, tlimit)
 			if err := row.Scan(&ts, &d); err != nil {
+				log.Printf("didn't find current data for %s: err: %s\n", host, err)
 				continue
 			}
 			stmt, err := db.Prepare("INSERT INTO hourly VALUES (?, ?, ?)")
 			if err != nil {
+				log.Printf("couldn't insert data for %s into hourly: %s\n", host, err)
 				continue
 			}
 			stmt.Exec(ts, host, d)
 		}
-		// prune current
-		stmt, err := db.Prepare("DELETE FROM current WHERE ts >= ?")
-		if err != nil {
-			log.Printf("db: can't prune current table: %s\n", err)
-		}
-		stmt.Exec()
-	}
-
-	// finally, do the same thing but for the daily table
-	tlimit = tlimit - 169200 // go back another 47h
-	row = db.QueryRow("SELECT ts FROM hourly ORDER BY ts DESC LIMIT 1")
-	if err := row.Scan(&c); err != nil {
+	default:
+		log.Printf("err: %s\n", err)
 		return
 	}
-	if c > tlimit {
+
+	// prune current
+	stmt, err := db.Prepare("DELETE FROM current WHERE ts < ?")
+	if err != nil {
+		log.Printf("db: can't prune current table: %s\n", err)
+	}
+	stmt.Exec(tlimit)
+
+	// now find the most recent timestamp from the daily table
+	c = 0
+	tlimit = tlimit - 169200 // go back another 47h
+	row = db.QueryRow("SELECT ts FROM daily ORDER BY ts DESC LIMIT 1")
+	switch err := row.Scan(&c); err {
+	case sql.ErrNoRows:
+		fallthrough
+	case nil:
+		//  do nothing if the most recent timestamp is
+		//  less than 48h old AND NOT zero (empty table)
+		if c <= tlimit && c != 0 {
+			break
+		}
+		// otherwise, copy most recent data for each host from hourly to daily
 		for host, _ := range nodeCopy {
 			var (
-				q = "SELECT ts, data FROM hourly WHERE host = ? AND ts >= ? ORDER BY ts DESC LIMIT 1"
+				q = "SELECT ts, data FROM hourly WHERE host = ? ORDER BY ts DESC LIMIT 1"
 				ts int64
 				d string
 			)
 			row = db.QueryRow(q, host, tlimit)
 			if err := row.Scan(&ts, &d); err != nil {
+				log.Printf("didn't find hourly data for %s: err: %s\n", host, err)
 				continue
 			}
 			stmt, err := db.Prepare("INSERT INTO daily VALUES (?, ?, ?)")
 			if err != nil {
+				log.Printf("couldn't insert data for %s into daily: %s\n", host, err)
 				continue
 			}
 			stmt.Exec(ts, host, d)
 		}
-		// prune hourly and daily
-		stmt, err := db.Prepare("DELETE FROM hourly WHERE ts >= ?")
-		if err != nil {
-			log.Printf("db: can't prune hourly table: %s\n", err)
-		}
-		stmt.Exec()
-		tlimit = tlimit - 5011200 // go back another 58 days
-		stmt, err = db.Prepare("DELETE FROM daily WHERE ts >= ?")
-		if err != nil {
-			log.Printf("db: can't prune daily table: %s\n", err)
-		}
-		stmt.Exec()
+	default:
+		log.Printf("err: %s\n", err)
+		return
 	}
+	// prune hourly
+	stmt, err = db.Prepare("DELETE FROM hourly WHERE ts < ?")
+	if err != nil {
+		log.Printf("db: can't prune hourly table: %s\n", err)
+	}
+	stmt.Exec(tlimit)
+	// and daily
+	tlimit = tlimit - 5011200 // go back another 58 days
+	stmt, err = db.Prepare("DELETE FROM daily WHERE ts < ?")
+	if err != nil {
+		log.Printf("db: can't prune daily table: %s\n", err)
+	}
+	stmt.Exec(tlimit)
 }
+
 
 func dbUpdate(payload []byte, upd data.AgentPayload) error {
  	// insert payload (we don't have to care about concurrency

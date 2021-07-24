@@ -106,9 +106,10 @@ func main() {
 	}
 	dbLoadNodeStatus()
 	defer db.Close()
-	// launch ticker for hourly table rollover (set ticker for 10
-	// minutes, but routine is a no-op unless enough time has
-	// passed)
+	// do an initial pruning, then launch ticker for hourly table
+	// rollover (set ticker for 10 minutes, but routine is a no-op
+	// unless enough time has passed)
+	dbPruneMigrate()
 	prunetick := time.NewTicker(600 * time.Second)
 	defer prunetick.Stop()
 
