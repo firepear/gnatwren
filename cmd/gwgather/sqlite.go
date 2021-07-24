@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	//"log"
+	"fmt"
 	//"strconv"
-	//"time"
+	"time"
 
 	"github.com/firepear/gnatwren/internal/data"
 	_ "github.com/mattn/go-sqlite3"
@@ -34,6 +34,9 @@ func dbSetup() (*sql.DB, error) {
 }
 
 func dbLoadNodeStatus() {
+	// build nodeStatus from data in DB on startup, which lets exportJSON work
+	//
+	// first get a list of hostnames
 	hosts := []string{}
 	rows, err := db.Query("SELECT DISTINCT host FROM current ORDER BY host")
 	if err != nil {
@@ -47,6 +50,7 @@ func dbLoadNodeStatus() {
 		hosts = append(hosts, host)
 	}
 
+	// now, for each host, fetch the most recent timestamp and slug it into nodeStatus
 	for _, host := range hosts {
 		row := db.QueryRow("SELECT ts FROM current WHERE host = ? ORDER BY ts DESC LIMIT 1",
 			host)
@@ -108,43 +112,31 @@ func dbGetCPUTemps() (map[int64]map[string]string, error) {
  	// map of temps (by timestamp, by host), to be returned
  	t := map[int64]map[string]string{}
  	// json goes here
- 	//m := data.AgentPayload{}
+ 	m := data.AgentPayload{}
  	// timestamp, as a string, one hour ago. we don't want
  	// anything older than this
- 	//tlimit := time.Now().Unix() - 3600
+ 	tlimit := time.Now().Unix() - 3600
 
+	rows, err := db.Query("SELECT data FROM current WHERE ts >= ?", tlimit)
+	if err != nil {
+		return t, err
+	}
+	for rows.Next() {
+		var d string
+		if err = rows.Scan(&d); err != nil {
+			return t, err
+		}
+		err = json.Unmarshal([]byte(d), &m)
+		if err != nil {
+			return t, err
+		}
 
-// 	err := db.View(func(txn *badger.Txn) error {
-// 		opts := badger.DefaultIteratorOptions
-// 		opts.PrefetchValues = false
-// 		it := txn.NewIterator(opts)
-// 		defer it.Close()
+		if t[m.TS] == nil {
+			t[m.TS] = map[string]string{}
+		}
+		t[m.TS][m.Host] = fmt.Sprintf("%5.2f", m.Cpu.Temp)
 
-// 		for it.Rewind(); it.Valid(); it.Next() {
-// 			item := it.Item()
-// 			k := item.Key()
-// 			// skip keys that happened more than 1h ago
-// 			if string(k) < tlimit {
-// 				continue
-// 			}
-// 			err := item.Value(func(v []byte) error {
-// 				err := json.Unmarshal(v, &m)
-// 				if err != nil {
-// 					return err
-// 				}
-// 				if t[m.TS] == nil {
-// 					t[m.TS] = map[string]string{}
-// 				}
-// 				t[m.TS][m.Host] = fmt.Sprintf("%5.2f", m.Cpu.Temp)
-// 				return nil
-// 			})
-// 			if err != nil {
-// 				return err
-// 			}
-// 		}
-// 		return nil
-// 	})
-	// 	return t, err
+	}
 	return t, nil
 }
 

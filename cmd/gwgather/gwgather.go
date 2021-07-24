@@ -33,7 +33,6 @@ var (
 
 func exportJSON() error {
 	machStats, err := dbGetCurrentStats()
-	log.Println(machStats)
 	if err != nil {
 		return err
 	}
