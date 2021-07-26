@@ -77,18 +77,18 @@ management tool:
 - `bind_addr`: The interface and port to bind to.Changing to
   interfaces other than `0.0.0.0` may cause failures on startup within
   Docker
-- `alerts`
+- alerts
   - `late_checkin`: Seconds until a client node is considered late and
     an alert is triggered
   - `over_temp`: CPU temperature in degC which triggers an
     alert
-- `db`
+- db
   - `location`: Path to the Gnatwren stats DB
   - `hours_retained`: How many hours of data to retain on an hourly
     (i.e. one sample per hour per node) basis
   - `days_retained`: How many days of data to retain on a daily
     (i.e. one sample per day per node) basis
-- `files`
+- files
   - `enabled`: No current function
   - `json_location`: Path to directory where JSON stats for the web
     status page should be dumped
