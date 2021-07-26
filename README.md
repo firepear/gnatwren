@@ -107,10 +107,10 @@ management tool:
 
 ## Efficiency
 
-In my most recent check across my farm, at over 5.5 days of runtime,
-the client had used an average of 40 cpu-seconds -- so a little less
-than 8 cpu-seconds per day. Memory usage was stable at approximately
-8MB on an x86_64 system.
+In my most recent check across my farm, over 5.5 days of runtime the
+client had used approximately 40 cpu-seconds on each node -- so a bit
+under 8 cpu-seconds per day on average. Memory usage was stable at
+approximately 8MB on an x86_64 system.
 
 The aggregator has been under much more frequent development, with
 large parts still be rewritten. I don't have solid statistics for it
