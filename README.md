@@ -28,6 +28,17 @@ Not much yet, but it's in-work, along with everything else:
 
 ![Early viz](https://i.imgur.com/iIJYA4Z.png)
 
+## Efficiency
+
+In my most recent check across my farm, over 5.5 days of runtime the
+client had used approximately 40 cpu-seconds on each node -- so a bit
+under 8 cpu-seconds per day on average. Memory usage was stable at
+approximately 8MB on an x86_64 system.
+
+The aggregator has been under much more frequent development, with
+large parts still be rewritten. I don't have solid statistics for it
+yet.
+
 ## Installation
 
 My project [Homefarm](https://github.com/firepear/homefarm), has a
@@ -104,14 +115,3 @@ management tool:
   selected from after each report is made. The default set is the
   primes around 30 and 45, resulting in (on average) 1.69 updates per
   minute, while minimizing simultaneous updates
-
-## Efficiency
-
-In my most recent check across my farm, over 5.5 days of runtime the
-client had used approximately 40 cpu-seconds on each node -- so a bit
-under 8 cpu-seconds per day on average. Memory usage was stable at
-approximately 8MB on an x86_64 system.
-
-The aggregator has been under much more frequent development, with
-large parts still be rewritten. I don't have solid statistics for it
-yet.
