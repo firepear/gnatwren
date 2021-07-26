@@ -69,3 +69,36 @@ management tool:
 - Enable and start the `gnatwren-gather` service on the aggregator
   node
 - Enable and start the `gnatwren-agent` service on agent nodes
+
+## Configuration
+
+### Gather (server)
+
+- `bind_addr`: The interface and port to bind to.Changing to
+  interfaces other than `0.0.0.0` may cause failures on startup within
+  Docker
+- `alerts`
+  - `late_checkin`: Seconds until a client node is considered late and
+    an alert is triggered
+  - `over_temp`: CPU temperature in degC which triggers an
+    alert
+- `db`
+  - `location`: Path to the Gnatwren stats DB
+  - `hours_retained`: How many hours of data to retain on an hourly
+    (i.e. one sample per hour per node) basis
+  - `days_retained`: How many days of data to retain on a daily
+    (i.e. one sample per day per node) basis
+- `files`
+  - `enabled`: No current function
+  - `json_location`: Path to directory where JSON stats for the web
+    status page should be dumped
+  - `json_interval`: Frequency, in seconds, of JSON dumps
+
+### Client
+
+- `gather_addr`: IP addr and port where the gather daemon is listening
+- `active`: No current function
+- `intervals`: The set of intervals, in seconds, which will be
+  selected from after each report is made. The default set is the
+  primes around 30 and 45, resulting in (on average) 1.69 updates per
+  minute, while minimizing simultaneous updates

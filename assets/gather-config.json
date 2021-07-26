@@ -5,7 +5,9 @@
         "over_temp": 75
     },
     "db": {
-        "location": "/var/lib/gnatwren.db"
+        "location": "/var/lib/gnatwren.db",
+        "hours_retained": 48,
+        "days_retained": 60
     },
     "files": {
         "enabled": true,
