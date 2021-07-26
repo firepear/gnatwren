@@ -22,14 +22,16 @@
       <table>
         <thead>
           <th>Node</th>
-          <th>Description</th>
+          <th>CPU Desc</th>
+          <th>Thd</th>
           <th>Uptime</th>
           <th>Loadavg</th>
-          <th>Mem Total</th>
-          <th>Mem Free / Avail</th>
+          <th>Sys Mem</th>
+          <th>Free / Avail Mem</th>
           <th>CPU Temp</th>
           <th>CPU Avg</th>
-          <th>CPU 1h&uarr;/&darr;</th>
+          <th>GPU Desc</th>
+          <th>GPU Temp</th>
         </thead>
         <tbody id="machdata">
         </tbody>
@@ -108,8 +110,13 @@
             tdName.setAttribute('class', 'first');
             // mach desc
             var tdDesc = document.createElement("td");
-            var descTxt = document.createTextNode(`${metric['Cpu']['Name']} (${ Object.keys(metric['Cpu']['Cores']).length } threads)`);
+            var descTxt = document.createTextNode(`${metric['Cpu']['Name']}`);
             tdDesc.appendChild(descTxt);
+            // thread count
+            var tdThreads = document.createElement("td");
+            var threadTxt = document.createTextNode(`${ Object.keys(metric['Cpu']['Cores']).length }`);
+            tdThreads.appendChild(threadTxt);
+            tdThreads.style.textAlign = 'right';
             // uptime
             var uptime = metric['Upt'];
             var upd = Math.floor(uptime / 86400);
@@ -159,19 +166,16 @@
             var cpuavTxt = document.createTextNode(`${cpuav}MHz`);
             tdCpuav.appendChild(cpuavTxt);
             tdCpuav.style.textAlign = 'right';
-            // cpu hi/lo
-            var tdCpuhl = document.createElement("td");
-            tdCpuhl.id = "cpuhl";
             // add all to the row
             tr.appendChild(tdName);
             tr.appendChild(tdDesc);
+            tr.appendChild(tdThreads);
             tr.appendChild(tdUp);
             tr.appendChild(tdLdavg);
             tr.appendChild(tdMemt);
             tr.appendChild(tdMemun);
             tr.appendChild(tdCput);
             tr.appendChild(tdCpuav);
-            tr.appendChild(tdCpuhl);
             tbody.appendChild(tr);
         }
 
@@ -220,8 +224,8 @@
 
     var cpuTReq = new XMLHttpRequest();
     cpuTReq.addEventListener("load", plotCPUTemps);
-    var cpuAReq = new XMLHttpRequest();
-    cpuAReq.addEventListener("load", plotCPUAvgs);
+    //var cpuAReq = new XMLHttpRequest();
+    //cpuAReq.addEventListener("load", plotCPUAvgs);
 
     getMachStats();
     setInterval(getMachStats, 300000);
