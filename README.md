@@ -13,8 +13,10 @@ for use or deployment**
 
 Reporting of the following data is implemented for x86 and Raspberry Pi:
 
-- CPU name, temperature (AMD K10 and Pi only), and per-core frequencies
-- Total and available memory
+- CPU name and per-core frequencies
+- CPU temperature (AMD K10 and Pi only)
+- GPU name and temperature (AMD and NVidia)
+- Total system, free, and available memory
 - Uptime
 - Loadavg
 
@@ -102,3 +104,12 @@ management tool:
   selected from after each report is made. The default set is the
   primes around 30 and 45, resulting in (on average) 1.69 updates per
   minute, while minimizing simultaneous updates
+
+## Efficiency
+
+In my most recent check, the client, over 5+ days of runtime an
+average of 40 cpu-seconds -- so a little less than 8 cpu-seconds per
+day. Memory usage was stable at approximately 8MB on an x86_64 system.
+
+The aggregator has been under much heavier and more varied
+development. I don't have solid statistics for it yet.
