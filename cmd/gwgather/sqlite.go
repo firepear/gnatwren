@@ -94,12 +94,9 @@ func dbPruneMigrate() {
 	case nil:
 		//  do nothing if the most recent timestamp is
 		//  less than 1h old AND NOT zero (empty table)
-		log.Printf("hourly: newest timestamp: %v; tlimit: %v; <=: %v\n", c, tlimit, c <= tlimit)
 		if c >= tlimit && c != 0 {
-			log.Println("hourly: skipping migration from current")
 			break
 		}
-		log.Println("hourly: migrating from current")
 		// for each host, grab the newest row from common --
 		// since we test for the most recent row in hourly
 		// being at least 1h old -- and copy to hourly
@@ -143,12 +140,9 @@ func dbPruneMigrate() {
 	case nil:
 		//  do nothing if the most recent timestamp is
 		//  less than 48h old AND NOT zero (empty table)
-		log.Printf("daily: newest timestamp: %v; tlimit: %v; <=: %v\n", c, tlimit, c <= tlimit)
 		if c >= tlimit && c != 0 {
-			log.Println("daily: skipping migration from hourly")
 			break
 		}
-		log.Println("daily: migrating from hourly")
 		// otherwise, copy most recent data for each host from hourly to daily
 		for host, _ := range nodeCopy {
 			var (
