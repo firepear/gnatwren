@@ -24,14 +24,14 @@
           <th>Node</th>
           <th>CPU Desc</th>
           <th>Thd</th>
+          <th>CPU Temp</th>
+          <th>CPU Avg</th>
           <th>Uptime</th>
           <th>Loadavg</th>
           <th>Sys Mem</th>
           <th>Free / Avail Mem</th>
-          <th>CPU Temp</th>
-          <th>CPU Avg</th>
           <th>GPU Desc</th>
-          <th>GPU Temp</th>
+          <th>GPU Temp/Pwr/Fan</th>
         </thead>
         <tbody id="machdata">
         </tbody>
@@ -170,12 +170,12 @@
             tr.appendChild(tdName);
             tr.appendChild(tdDesc);
             tr.appendChild(tdThreads);
+            tr.appendChild(tdCput);
+            tr.appendChild(tdCpuav);
             tr.appendChild(tdUp);
             tr.appendChild(tdLdavg);
             tr.appendChild(tdMemt);
             tr.appendChild(tdMemun);
-            tr.appendChild(tdCput);
-            tr.appendChild(tdCpuav);
             tbody.appendChild(tr);
         }
 
