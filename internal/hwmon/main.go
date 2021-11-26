@@ -179,7 +179,7 @@ func Tempinfo() int {
 				}
 				labelstr := string(label)
 				// we're only interested in the Tdie reading
-				if labelstr != "Tdie\n" {
+				if labelstr != "Tctl\n" {
 					continue
 				}
 				// when we find it, edit our path to point at
