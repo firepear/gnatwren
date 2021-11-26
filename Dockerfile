@@ -13,6 +13,8 @@ WORKDIR cmd/gwgather
 RUN go build
 
 
-FROM nginx
-COPY --from=builder /gwg/cmd/gwgather/gwgather /gwg/gather-config.json ./
-CMD ["./gwgather", "-config", "gwgather-config.json"]
+FROM nginx:stable-alpine
+RUN apk --no-cache add busybox
+COPY --from=builder /gwg/cmd/gwgather/gwgather /usr/bin/gwgather
+COPY --from=builder /gwg/gwgather-config.json /etc/gwgather-config.json
+CMD ["/usr/bin/gwgather", "-config", "/etc/gwgather-config.json"]
