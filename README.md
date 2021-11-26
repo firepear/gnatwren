@@ -41,7 +41,7 @@ yet.
 
 ## Installation
 
-## Docker
+### Docker
 
 To build and launch a Docker container which runs `gwgather` and an
 instance of `nginx` for web monitoring, run `./build.sh`
@@ -53,15 +53,6 @@ needed, attach with
 
 Re-run the build script anytime. No monitoring data will be lost.
 
-## Homefarm
-
-My project [Homefarm](https://github.com/firepear/homefarm), has a
-pair of Ansible playbooks which could be used as a base for your own
-customized install if you're using Ansible or a similar config
-management tool:
-
-- [Control node playbook](https://github.com/firepear/homefarm/blob/master/gnatwren-control.yml) (builds gwgather and gwquery)
-- [Compute node playbook](https://github.com/firepear/homefarm/blob/master/gnatwren-nodes.yml) (builds gwagent and deploys it to nodes)
 
 ### Manual install
 
