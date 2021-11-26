@@ -41,6 +41,16 @@ yet.
 
 ## Installation
 
+## Docker
+
+- `cp ./assets/gather-config.json .`
+- Edit `gather-config.json`
+- `docker build --tag gwgather .`
+- `docker volume create gwg`
+- `docker run -d --restart always -p 9098:80 -p 11099:11099 -v gwg:/usr/share/nginx/html gwgatger`
+
+## Homefarm
+
 My project [Homefarm](https://github.com/firepear/homefarm), has a
 pair of Ansible playbooks which could be used as a base for your own
 customized install if you're using Ansible or a similar config

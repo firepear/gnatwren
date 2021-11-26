@@ -2,10 +2,10 @@
 #
 # To build: 'docker build --tag gwgather .'
 #
-# To launch: docker run --rm -p 9099:80 -v /PATH/TO/homefarm:/homefarm -it control /bin/bash
+# To launch: docker run -d --restart always -p CONFIG_PORT:11099 -v /PATH/TO/DBDIR:/db
 #
 
-FROM golang:alpine
+FROM golang:alpine as builder
 RUN apk --no-cache add gcc musl-dev
 WORKDIR /gwg
 COPY . /gwg/
@@ -13,6 +13,6 @@ WORKDIR cmd/gwgather
 RUN go build
 
 
-FROM golang:alpine
-COPY --from=0 /gwg/cmd/gwgather/gwgather ./
+FROM nginx
+COPY --from=builder /gwg/cmd/gwgather/gwgather /gwg/gather-config.json ./
 CMD ["./gwgather", "-config", "gwgather-config.json"]

@@ -2,16 +2,16 @@
     "bind_addr": "0.0.0.0:11099",
     "alerts": {
         "late_checkin": 90,
-        "over_temp": 75
+        "over_temp": 80
     },
     "db": {
-        "location": "/var/lib/gnatwren.db",
+        "location": "/usr/share/nginx/html/gnatwren.db",
         "hours_retained": 48,
         "days_retained": 60
     },
     "files": {
         "enabled": true,
-        "json_location": "/path/to/dir",
+        "json_location": "/usr/share/nginx/html",
         "json_interval": 30
     }
 }
