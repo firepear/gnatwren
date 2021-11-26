@@ -15,7 +15,7 @@ import (
 
 
 func Arch() string {
-	arch, err := exec.Command("uname -m").Output()
+	arch, err := exec.Command("/bin/env uname -m").Output()
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
