@@ -100,7 +100,7 @@ func main() {
         }
 
 	// initialize database
-	db, err = dbSetup()
+	db, err = dbSetup(config.DB.Loc)
 	if err != nil {
 		log.Fatalf("sqlite: can't init db: %s", err)
 	}

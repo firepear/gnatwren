@@ -11,9 +11,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func dbSetup() (*sql.DB, error) {
+func dbSetup(dbloc string) (*sql.DB, error) {
 	// Open the database
-	db, err := sql.Open("sqlite3", "./.gnatwren.db")
+	db, err := sql.Open("sqlite3", dbloc)
 	if err != nil {
 		return db, err
 	}

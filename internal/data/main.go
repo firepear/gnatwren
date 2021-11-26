@@ -22,7 +22,9 @@ type GatherAlertConfig struct {
 }
 
 type GatherDBConfig struct {
-	Loc string `json:"location"`
+	Loc  string `json:"location"`
+	Hrs  int64  `json:"hours_retained"`
+	Days int64  `json:"days_retained"`
 }
 
 type GatherFileConfig struct {

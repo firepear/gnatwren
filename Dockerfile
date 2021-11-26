@@ -14,7 +14,7 @@ RUN go build
 
 
 FROM nginx:stable-alpine
-RUN apk --no-cache add busybox
+RUN apk --no-cache add busybox sqlite3
 COPY --from=builder /gwg/cmd/gwgather/gwgather /usr/bin/gwgather
 COPY --from=builder /gwg/gwgather-config.json /etc/gwgather-config.json
 CMD ["/usr/bin/gwgather", "-config", "/etc/gwgather-config.json"]
