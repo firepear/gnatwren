@@ -47,7 +47,7 @@ yet.
 - Edit `gather-config.json`
 - `docker build --tag gwgather .`
 - `docker volume create gwg`
-- `docker run -d --restart always -p 9098:80 -p 11099:11099 -v gwg:/usr/share/nginx/html gwgatger`
+- `docker run -d --restart always -p 9098:80 -p 11099:11099 -v gwg:/usr/share/nginx/html gwgather`
 
 ## Homefarm
 
