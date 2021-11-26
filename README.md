@@ -43,11 +43,15 @@ yet.
 
 ## Docker
 
-- `cp ./assets/gather-config.json .`
-- Edit `gather-config.json`
-- `docker build --tag gwgather .`
-- `docker volume create gwg`
-- `docker run -d --restart always -p 9098:80 -p 11099:11099 -v gwg:/usr/share/nginx/html gwgather`
+To build and launch a Docker container which runs `gwgather` and an
+instance of `nginx` for web monitoring, run `./build.sh`
+
+The container has `busybox` and `sqlite` installed for diagnostics. If
+needed, attach with
+
+`docker exec -it gwgather ash`
+
+Re-run the build script anytime. No monitoring data will be lost.
 
 ## Homefarm
 
@@ -77,11 +81,11 @@ management tool:
   `./assets/gnatwren-gather.service`
   - It should be deployed according to systemd standards on the
     aggregator node
-- A config file for `gwagent` is at `./assets/agent-config.json`
+- A config file for `gwagent` is at `./assets/gwagent-config.json`
   - Edit and deploy to `/etc/gnatwren/gwagent-config.json` on agent
     nodes
   - It must be readable by user `nobody`
-- A config file for `gwgather` is at `./assets/gather-config.json`
+- A config file for `gwgather` is at `./assets/gwgather-config.json`
   - Edit and deploy to `/etc/gnatwren/gwgather-config.json` on the
     aggregator node
   - It must be readable by the user `nobody`
