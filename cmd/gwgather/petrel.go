@@ -26,9 +26,9 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 	mux.Lock()
 	// the first timestamp is now (check-in ts)
 	newTS[0] = time.Now().Unix()
-	// second timestamp is the hosts's reporting time (which can
-	// be in the past due to event playback). only update if the
-	// event timestamp is newer than what we have
+	// second timestamp is the hosts's last reporting time (which
+	// can be in the past due to event playback). only update if
+	// the event timestamp is newer than what we have
 	if upd.TS > nodeStatus[upd.Host][1] {
 		newTS[1] = upd.TS
 	} else {
