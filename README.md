@@ -13,7 +13,7 @@ for use or deployment**
 
 Reporting of the following data is implemented for x86 and Raspberry Pi:
 
-- CPU name and per-core frequencies
+- CPU name and average frequencies
 - CPU temperature (AMD K10 and Pi only)
 - GPU name and temperature (AMD and NVidia)
 - Total system, free, and available memory
