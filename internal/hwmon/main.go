@@ -49,7 +49,8 @@ func Cpuinfo() data.CPUdata {
 			procname = strings.Join(line[3:], " ")
 		} else if line[1] == "MHz" {
 			procs[procnum] = line[3]
-			agvclk += strconv.Parsefloat(line[3], 64)
+			clk, _ := strconv.ParseFloat(line[3], 64)
+			avgclk += clk
 		}
 	}
 	if len(procs) == 0 {
@@ -59,10 +60,9 @@ func Cpuinfo() data.CPUdata {
 	temp := Tempinfo()
 	return data.CPUdata{
 		Name: procname,
-		Avgclk: (avgclk / len(procs)),
+		Avgclk: (avgclk / float64(len(procs))),
 		Temp: (float64(temp) / 1000),
-		Cores: procs
-	}
+		Cores: procs }
 }
 
 // CpuinfoSysfs is the fallback function for gathering core speeds. It
