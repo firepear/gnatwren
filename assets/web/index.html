@@ -103,16 +103,9 @@
             var nameTxt = document.createTextNode(`${nodes[i]}`);
             tdName.appendChild(nameTxt);
             tdName.setAttribute('class', 'first');
-            // cpu avg freq
-            var cpuav = 0;
-            var cputot = 0
-            for (let j in metric['Cpu']['Cores']) {
-                cputot += Number(metric['Cpu']['Cores'][j]);
-            }
-            cpuav = Math.floor(cputot / Object.keys(metric['Cpu']['Cores']).length);
             // mach desc
             var tdDesc = document.createElement("td");
-            var descTxt = document.createTextNode(`${metric['Cpu']['Name']} : ${ Object.keys(metric['Cpu']['Cores']).length } : ${Number(metric['Cpu']['Temp']).toFixed(2)}C : ${cpuav}MHz`);
+            var descTxt = document.createTextNode(`${metric['Cpu']['Name']} : ${ Object.keys(metric['Cpu']['Cores']).length } : ${Number(metric['Cpu']['Temp']).toFixed(2)}C : ${Math.floor(metric['Cpu']['Avgclk'])}MHz`);
             tdDesc.appendChild(descTxt);
             // uptime
             var uptime = metric['Upt'];
@@ -130,7 +123,7 @@
             tdUp.appendChild(upTxt);
             // load average
             var tdLdavg = document.createElement("td");
-            var ldavgTxt = document.createTextNode(`${metric['Ldavg'][0]}, ${metric['Ldavg'][1]}, ${metric['Ldavg'][2]}`);
+            var ldavgTxt = document.createTextNode(`${metric['Ldavg']}`);
             tdLdavg.appendChild(ldavgTxt);
             tdLdavg.style.textAlign = 'right';
             // memory, total

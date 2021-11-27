@@ -50,7 +50,7 @@ func exportJSON() error {
 		data = append(data, []byte(strconv.FormatInt(metrics.TS, 10))...)
 		data = append(data, []byte(`,"Payload":`)...)
 		data = append(data, []byte(metrics.Payload)...)
-		data = append(data, []byte(`}}`)...)
+		data = append(data, []byte(`}`)...)
 		if i < len(*machStats) {
 			data = append(data, []byte(`,`)...)
 		}
