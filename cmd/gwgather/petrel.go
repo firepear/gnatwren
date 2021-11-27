@@ -44,27 +44,3 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 	}
 	return fresp, err
 }
-
-
-func queryHandler (args [][]byte) ([]byte, error) {
-	var q = data.Query{}
-	err := json.Unmarshal(args[0], &q)
-	if err != nil {
-		return fresp, err
-	}
-
-	switch q.Op {
-	case "status":
-		curMetrics, err := dbGetCurrentStats()
-		respb, err := json.Marshal(curMetrics)
-		return respb, err
-	case "dbstatus":
-		dbMetrics, err := dbGetDBStats()
-		respb, err := json.Marshal(dbMetrics)
-		return respb, err
-	}
-	return fresp, err
-}
-
-
-

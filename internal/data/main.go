@@ -61,7 +61,7 @@ type AgentPayload struct {
 	TS int64
 	Cpu CPUdata
 	Mem [3]int
-	Ldavg [3]string
+	Ldavg string
 	Upt string
 }
 
@@ -69,15 +69,8 @@ type AgentPayload struct {
 // collected on a machine's CPU. Name is the CPU name as reported by
 // the OS, and Cores is a map of core ids to speeds in MHz.
 type CPUdata struct {
-	Name string
-	Cores map[string]string
-	Temp float64
-}
-
-// DBStatus holds selected facts about the current state of the
-// database
-type DBStatus struct {
-	Newest string
-	Oldest string
-	Count int
+	Name   string
+	Cores  map[string]string
+	Avgclk float64
+	Temp   float64
 }

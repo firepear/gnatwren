@@ -182,21 +182,19 @@ func dbPruneMigrate() {
 }
 
 
-func dbUpdate(payload []byte, upd data.AgentPayload) error {
+func dbUpdate(upd *data.AgentPayload) error {
  	// insert payload (we don't have to care about concurrency
  	// here; that's taken care of by a mutex in petrel.go)
  	stmt, err := db.Prepare("INSERT INTO current VALUES (?, ?, ?)")
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(upd.TS, upd.Host, string(payload))
-	if err != nil {
-		return err
-	}
+	data, _ := json.Marshal(upd)
+	_, err = stmt.Exec(upd.TS, upd.Host, string(data))
  	return err
 }
 
-func dbGetCurrentStats() (map[string]data.AgentStatus, error) {
+func dbGetCurrentStats() (*map[string]data.AgentStatus, error) {
 	// copy the nodeStatus to minimize time it's locked
 	nodeCopy := map[string][2]int64{}
 	mux.RLock()
@@ -218,14 +216,17 @@ func dbGetCurrentStats() (map[string]data.AgentStatus, error) {
 			m data.AgentStatus
 		)
 		if err = row.Scan(&d); err != nil {
-			return nil, err
+			// this used to barf on no data. now it
+			// doesn't, but the right thing to do is
+			// something more useful TODO
+			continue
 		}
 
 		m.TS = hostTs[1]
 		err = json.Unmarshal([]byte(d), &m.Payload)
 		metrics[host] = m
 	}
- 	return metrics, err
+	return &metrics, err
 }
 
 func dbGetCPUTemps() (map[int64]map[string]string, error) {
@@ -260,8 +261,8 @@ func dbGetCPUTemps() (map[int64]map[string]string, error) {
 	return t, nil
 }
 
-func dbGetDBStats() (data.DBStatus, error) {
- 	var dbs data.DBStatus
+//func dbGetDBStats() (data.DBStatus, error) {
+// 	var dbs data.DBStatus
 
 // 	err := db.View(func(txn *badger.Txn) error {
 // 		it := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -279,9 +280,9 @@ func dbGetDBStats() (data.DBStatus, error) {
 // 		}
 // 		return nil
 // 	})
- 	//return dbs, err
-	return dbs, nil
-}
+//return dbs, err//
+//	return dbs, nil
+//}
 
 // https://www.sqlite.org/sharedcache.html
 

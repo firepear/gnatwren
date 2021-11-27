@@ -93,11 +93,6 @@ func main() {
                 log.Printf("failed to register responder 'agentupdate': %s\n", err)
                 os.Exit(1)
         }
-	err = petrel.Register("query", "blob", queryHandler)
-        if err != nil {
-                log.Printf("failed to register responder 'status': %s\n", err)
-                os.Exit(1)
-        }
 
 	// initialize database
 	db, err = dbSetup(config.DB.Loc)
