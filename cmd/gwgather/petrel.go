@@ -37,7 +37,7 @@ func agentUpdate(args [][]byte) ([]byte, error) {
 	nodeStatus[upd.Host] = newTS
 
 	// send data to the DB
-	err = dbUpdate(args[0], upd)
+	err = dbUpdate(&upd)
 	mux.Unlock()
 	if err != nil {
 		log.Printf("agentUpdate: db err: %s", err)
