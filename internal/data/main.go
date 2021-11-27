@@ -51,7 +51,7 @@ type Query struct {
 // check-in time from gwgather
 type AgentStatus struct {
 	TS int64
-	Payload AgentPayload
+	Payload string
 }
 
 // AgentPayload represents one sample, as collected by gwagent.

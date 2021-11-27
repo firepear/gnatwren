@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -36,11 +37,27 @@ func exportJSON() error {
 	if err != nil {
 		return err
 	}
-	var sb strings.Builder
-	sb.WriteString(config.Files.JsonLoc)
-	sb.WriteString("/machines.json")
-	machStatsj, _ := json.Marshal(machStats)
-	err = os.WriteFile(sb.String(), machStatsj, 0644)
+	var filename strings.Builder
+	var data []byte
+	filename.WriteString(config.Files.JsonLoc)
+	filename.WriteString("/machines.json")
+	data = append(data, []byte("{")...)
+	i := 1
+	for host, metrics := range *machStats {
+		data = append(data, []byte(`"`)...)
+		data = append(data, []byte(host)...)
+		data = append(data, []byte(`": {"TS":`)...)
+		data = append(data, []byte(strconv.FormatInt(metrics.TS, 10))...)
+		data = append(data, []byte(`,"Payload":`)...)
+		data = append(data, []byte(metrics.Payload)...)
+		data = append(data, []byte(`}}`)...)
+		if i < len(*machStats) {
+			data = append(data, []byte(`,`)...)
+		}
+		i++
+	}
+	data = append(data, []byte("}")...)
+	err = os.WriteFile(filename.String(), data, 0644)
 	if err != nil {
 		return err
 	}
@@ -49,11 +66,11 @@ func exportJSON() error {
 	if err != nil {
 		return err
 	}
-	sb.Reset()
-	sb.WriteString(config.Files.JsonLoc)
-	sb.WriteString("/cputemps.json")
+	filename.Reset()
+	filename.WriteString(config.Files.JsonLoc)
+	filename.WriteString("/cputemps.json")
 	cpuTempsj, _ := json.Marshal(cpuTemps)
-	err = os.WriteFile(sb.String(), cpuTempsj, 0644)
+	err = os.WriteFile(filename.String(), cpuTempsj, 0644)
 	if err != nil {
 		return err
 	}
@@ -114,7 +131,7 @@ func main() {
 		log.Printf("couldn't export to json: %s\n", err)
 	}
 	// then launch a ticker to export every 5 min
-	jsontick := time.NewTicker(300 * time.Second)
+	jsontick := time.NewTicker(time.Duration(config.Files.JsonInt) * time.Second)
 	defer jsontick.Stop()
 
 	// set up a channel to handle termination events

@@ -211,11 +211,8 @@ func dbGetCurrentStats() (*map[string]data.AgentStatus, error) {
 	var err error
 	for host, hostTs := range nodeCopy {
 		row := db.QueryRow("SELECT data FROM current WHERE ts = ? AND host = ?", hostTs[1], host)
-		var (
-			d string
-			m data.AgentStatus
-		)
-		if err = row.Scan(&d); err != nil {
+		var m data.AgentStatus
+		if err = row.Scan(&m.Payload); err != nil {
 			// this used to barf on no data. now it
 			// doesn't, but the right thing to do is
 			// something more useful TODO
@@ -223,7 +220,6 @@ func dbGetCurrentStats() (*map[string]data.AgentStatus, error) {
 		}
 
 		m.TS = hostTs[1]
-		err = json.Unmarshal([]byte(d), &m.Payload)
 		metrics[host] = m
 	}
 	return &metrics, err
@@ -260,29 +256,6 @@ func dbGetCPUTemps() (map[int64]map[string]string, error) {
 	}
 	return t, nil
 }
-
-//func dbGetDBStats() (data.DBStatus, error) {
-// 	var dbs data.DBStatus
-
-// 	err := db.View(func(txn *badger.Txn) error {
-// 		it := txn.NewIterator(badger.DefaultIteratorOptions)
-// 		defer it.Close()
-
-// 		for it.Rewind(); it.Valid(); it.Next() {
-// 			item := it.Item()
-// 			k := item.Key()
-// 			if dbs.Count == 0 {
-// 				dbs.Oldest = string(k)
-// 			} else {
-// 				dbs.Newest = string(k)
-// 			}
-// 			dbs.Count++
-// 		}
-// 		return nil
-// 	})
-//return dbs, err//
-//	return dbs, nil
-//}
 
 // https://www.sqlite.org/sharedcache.html
 
