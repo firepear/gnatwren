@@ -10,6 +10,7 @@ RUN apk --no-cache add gcc musl-dev
 WORKDIR /gwg
 COPY . /gwg/
 WORKDIR cmd/gwgather
+ENV CGO_ENABLED=1 CGO_CFLAGS="-DSQLITE_ENABLE_JSON1"
 RUN go build
 
 

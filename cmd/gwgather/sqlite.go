@@ -225,7 +225,7 @@ func dbGetCurrentStats() (*map[string]data.AgentStatus, error) {
 	return &metrics, err
 }
 
-func dbGetCPUTemps() (map[int64]map[string]string, error) {
+func dbGetCPUTemps() (*map[int64]map[string]string, error) {
  	// map of temps (by timestamp, by host), to be returned
  	t := map[int64]map[string]string{}
  	// json goes here
@@ -236,16 +236,16 @@ func dbGetCPUTemps() (map[int64]map[string]string, error) {
 
 	rows, err := db.Query("SELECT data FROM current WHERE ts >= ?", tlimit)
 	if err != nil {
-		return t, err
+		return nil, err
 	}
 	for rows.Next() {
 		var d string
 		if err = rows.Scan(&d); err != nil {
-			return t, err
+			return nil, err
 		}
 		err = json.Unmarshal([]byte(d), &m)
 		if err != nil {
-			return t, err
+			return nil, err
 		}
 
 		if t[m.TS] == nil {
@@ -254,7 +254,7 @@ func dbGetCPUTemps() (map[int64]map[string]string, error) {
 		t[m.TS][m.Host] = fmt.Sprintf("%5.2f", m.Cpu.Temp)
 
 	}
-	return t, nil
+	return &t, nil
 }
 
 // https://www.sqlite.org/sharedcache.html

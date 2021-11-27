@@ -69,7 +69,7 @@ func exportJSON() error {
 	filename.Reset()
 	filename.WriteString(config.Files.JsonLoc)
 	filename.WriteString("/cputemps.json")
-	cpuTempsj, _ := json.Marshal(cpuTemps)
+	cpuTempsj, _ := json.Marshal(*cpuTemps)
 	err = os.WriteFile(filename.String(), cpuTempsj, 0644)
 	if err != nil {
 		return err
