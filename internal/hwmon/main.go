@@ -28,6 +28,7 @@ func Cpuinfo() data.CPUdata {
 	procs := map[string]string{}
 	procname := ""
 	procnum := ""
+	avgclk := 0.0
 
 	file, err := os.Open("/proc/cpuinfo")
 	if err != nil {
@@ -48,6 +49,7 @@ func Cpuinfo() data.CPUdata {
 			procname = strings.Join(line[3:], " ")
 		} else if line[1] == "MHz" {
 			procs[procnum] = line[3]
+			agvclk += strconv.Parsefloat(line[3], 64)
 		}
 	}
 	if len(procs) == 0 {
@@ -55,7 +57,12 @@ func Cpuinfo() data.CPUdata {
 	}
 
 	temp := Tempinfo()
-	return data.CPUdata{Name: procname, Temp: (float64(temp) / 1000), Cores: procs}
+	return data.CPUdata{
+		Name: procname,
+		Avgclk: (avgclk / len(procs)),
+		Temp: (float64(temp) / 1000),
+		Cores: procs
+	}
 }
 
 // CpuinfoSysfs is the fallback function for gathering core speeds. It
@@ -84,13 +91,13 @@ func CpuinfoSysfs() map[string]string {
 	return procs
 }
 
-func Loadinfo() [3]string {
+func Loadinfo() string {
 	loadavg_b, err := os.ReadFile("/proc/loadavg")
 	if err != nil {
 		log.Fatal(err)
 	}
 	loadavg := strings.Fields(string(loadavg_b))
-	return [3]string{loadavg[0], loadavg[1], loadavg[2]}
+	return loadavg[0]
 }
 
 // Meminfo scans the file /proc/meminfo and extracts the values for
