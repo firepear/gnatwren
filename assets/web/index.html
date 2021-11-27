@@ -22,16 +22,11 @@
       <table>
         <thead>
           <th>Node</th>
-          <th>CPU Desc</th>
-          <th>Thd</th>
-          <th>CPU Temp</th>
-          <th>CPU Avg</th>
+          <th>CPU Desc | Thd | Tmp | Clock</th>
           <th>Uptime</th>
           <th>Loadavg</th>
-          <th>Sys Mem</th>
-          <th>Free / Avail Mem</th>
-          <th>GPU Desc</th>
-          <th>GPU Temp/Pwr/Fan</th>
+          <th>Mem Tot : Free : Avail</th>
+          <th>GPU Desc : Temp : Pwr : Fan</th>
         </thead>
         <tbody id="machdata">
         </tbody>
@@ -108,15 +103,17 @@
             var nameTxt = document.createTextNode(`${nodes[i]}`);
             tdName.appendChild(nameTxt);
             tdName.setAttribute('class', 'first');
+            // cpu avg freq
+            var cpuav = 0;
+            var cputot = 0
+            for (let j in metric['Cpu']['Cores']) {
+                cputot += Number(metric['Cpu']['Cores'][j]);
+            }
+            cpuav = Math.floor(cputot / Object.keys(metric['Cpu']['Cores']).length);
             // mach desc
             var tdDesc = document.createElement("td");
-            var descTxt = document.createTextNode(`${metric['Cpu']['Name']}`);
+            var descTxt = document.createTextNode(`${metric['Cpu']['Name']} : ${ Object.keys(metric['Cpu']['Cores']).length } : ${Number(metric['Cpu']['Temp']).toFixed(2)}C : ${cpuav}MHz`);
             tdDesc.appendChild(descTxt);
-            // thread count
-            var tdThreads = document.createElement("td");
-            var threadTxt = document.createTextNode(`${ Object.keys(metric['Cpu']['Cores']).length }`);
-            tdThreads.appendChild(threadTxt);
-            tdThreads.style.textAlign = 'right';
             // uptime
             var uptime = metric['Upt'];
             var upd = Math.floor(uptime / 86400);
@@ -138,43 +135,19 @@
             tdLdavg.style.textAlign = 'right';
             // memory, total
             var memtot = metric['Mem'][0] / 1024 / 1024;
-            var tdMemt = document.createElement("td");
-            var memtTxt = document.createTextNode(`${memtot.toFixed(2)}GB`);
-            tdMemt.appendChild(memtTxt);
-            tdMemt.style.textAlign = 'right';
             // memory, unused
             var memun = metric['Mem'][1] / metric['Mem'][0] * 100
-            var tdMemun = document.createElement("td");
             // memory, available
             var memav = metric['Mem'][2] / metric['Mem'][0] * 100
-            var memunTxt = document.createTextNode(`${memun.toFixed(2)}% / ${memav.toFixed(2)}%`);
+            var tdMemun = document.createElement("td");
+            var memunTxt = document.createTextNode(`${memtot.toFixed(2)}GB : ${memun.toFixed(2)}% : ${memav.toFixed(2)}%`);
             tdMemun.appendChild(memunTxt);
             tdMemun.style.textAlign = 'right';
-            // cpu temp
-            var tdCput = document.createElement("td");
-            var cputTxt = document.createTextNode(`${Number(metric['Cpu']['Temp']).toFixed(2)}C`);
-            tdCput.appendChild(cputTxt);
-            tdCput.style.textAlign = 'right';
-            // cpu avg freq
-            var cpuav = 0;
-            var cputot = 0
-            for (let j in metric['Cpu']['Cores']) {
-                cputot += Number(metric['Cpu']['Cores'][j]);
-            }
-            cpuav = Math.floor(cputot / Object.keys(metric['Cpu']['Cores']).length);
-            var tdCpuav = document.createElement("td");
-            var cpuavTxt = document.createTextNode(`${cpuav}MHz`);
-            tdCpuav.appendChild(cpuavTxt);
-            tdCpuav.style.textAlign = 'right';
             // add all to the row
             tr.appendChild(tdName);
             tr.appendChild(tdDesc);
-            tr.appendChild(tdThreads);
-            tr.appendChild(tdCput);
-            tr.appendChild(tdCpuav);
             tr.appendChild(tdUp);
             tr.appendChild(tdLdavg);
-            tr.appendChild(tdMemt);
             tr.appendChild(tdMemun);
             tbody.appendChild(tr);
         }
