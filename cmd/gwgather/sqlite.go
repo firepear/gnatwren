@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"log"
 	"time"
 
@@ -228,30 +228,26 @@ func dbGetCurrentStats() (*map[string]data.AgentStatus, error) {
 func dbGetCPUTemps() (*map[int64]map[string]string, error) {
  	// map of temps (by timestamp, by host), to be returned
  	t := map[int64]map[string]string{}
- 	// json goes here
- 	m := data.AgentPayload{}
  	// timestamp, one hour ago. we don't want anything older than
  	// this
  	tlimit := time.Now().Unix() - 3600
 
-	rows, err := db.Query("SELECT data FROM current WHERE ts >= ?", tlimit)
+	rows, err := db.Query("SELECT ts, host, json_extract(data, '$.Cpu.Temp') FROM current WHERE ts >= ?", tlimit)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var d string
-		if err = rows.Scan(&d); err != nil {
-			return nil, err
-		}
-		err = json.Unmarshal([]byte(d), &m)
-		if err != nil {
+		var ts int64
+		var host string
+		var temp string
+		if err = rows.Scan(&ts, &host, &temp); err != nil {
 			return nil, err
 		}
 
-		if t[m.TS] == nil {
-			t[m.TS] = map[string]string{}
+		if t[ts] == nil {
+			t[ts] = map[string]string{}
 		}
-		t[m.TS][m.Host] = fmt.Sprintf("%5.2f", m.Cpu.Temp)
+		t[ts][host] = temp
 
 	}
 	return &t, nil
