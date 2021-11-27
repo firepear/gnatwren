@@ -3,6 +3,8 @@
 
     * Gnatwren is now fully discrete from Homefarm
 
+    * gwgather is containerized
+
     * Small fixes to CPU temp reporting for k10 driver
 
 
