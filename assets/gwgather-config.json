@@ -2,7 +2,7 @@
     "bind_addr": "0.0.0.0:11099",
     "alerts": {
         "late_checkin": 90,
-        "temp_warn": 80
+        "temp_warn": 80,
         "temp_crit": 90
     },
     "db": {
@@ -11,7 +11,6 @@
         "days_retained": 60
     },
     "files": {
-        "enabled": true,
         "json_location": "/usr/share/nginx/html",
         "json_interval": 30
     }

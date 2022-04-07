@@ -77,7 +77,7 @@
     }
 
     function getCPUTemps() {
-        cpuTReq.open("GET", `${url}/cputemps.json`);
+        cpuTReq.open("GET", `${url}/cputemps-current.json`);
         cpuTReq.send();
     }
 
@@ -150,7 +150,7 @@
     }
 
     function getMachStats() {
-        machSReq.open("GET", `${url}/machines.json`);
+        machSReq.open("GET", `${url}/overview.json`);
         machSReq.send();
     }
 
@@ -171,7 +171,7 @@
             dimensions: ['timestamp']
         }
     };
-    var cpuADom = document.getElementById('cpuavg');
+/*    var cpuADom = document.getElementById('cpuavg');
     var cpuAChart = echarts.init(cpuADom);
     var cpuA;
     // set options
@@ -186,7 +186,7 @@
             source: [],
             dimensions: ['timestamp']
         }
-    };
+    }; */
 
     var cpuTReq = new XMLHttpRequest();
     cpuTReq.addEventListener("load", plotCPUTemps);

@@ -1,18 +1,34 @@
 0.11.0 - 2022-04-07
 --------------------------------------------------------------------
 
-    [gwagent]
+  [gwagent]
 
     * Enabled GPU info reporting, beginning with Nvidia
       cards
 
-    [gwdump]
+    * Removed average clock speed from CPUdata struct
+
+  [gwgather]
+
+    * Config file attribute `over_temp` changed to `temp_warn`, and
+      new attrribute `temp_crit` was added
+
+  [gwdump]
 
     * Changed JSON output filenames
 
     * There are now 7 JSON files produced: the current machine stats
       file, three files for CPU temps (past-hour, hourly, daily), and
       three in the same format for GPU temps
+
+  [web]
+
+    * Clock is now computed
+
+    * Hovering over Clock displays a tooltip with per-core clocks
+
+    * New JSON files are now fetched at appropriate intervals, but are
+      not yet displayed
 
 
 0.10.0 - 2021-11-27

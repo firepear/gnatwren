@@ -7,8 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -31,51 +29,6 @@ var (
 	// terminates event loop when false
 	keepalive = true
 )
-
-func exportJSON() error {
-	machStats, err := dbGetCurrentStats()
-	if err != nil {
-		return err
-	}
-	var filename strings.Builder
-	var data []byte
-	filename.WriteString(config.Files.JsonLoc)
-	filename.WriteString("/machines.json")
-	data = append(data, []byte("{")...)
-	i := 1
-	for host, metrics := range *machStats {
-		data = append(data, []byte(`"`)...)
-		data = append(data, []byte(host)...)
-		data = append(data, []byte(`": {"TS":`)...)
-		data = append(data, []byte(strconv.FormatInt(metrics.TS, 10))...)
-		data = append(data, []byte(`,"Payload":`)...)
-		data = append(data, []byte(metrics.Payload)...)
-		data = append(data, []byte(`}`)...)
-		if i < len(*machStats) {
-			data = append(data, []byte(`,`)...)
-		}
-		i++
-	}
-	data = append(data, []byte("}")...)
-	err = os.WriteFile(filename.String(), data, 0644)
-	if err != nil {
-		return err
-	}
-
-	cpuTemps, err := dbGetCPUTemps()
-	if err != nil {
-		return err
-	}
-	filename.Reset()
-	filename.WriteString(config.Files.JsonLoc)
-	filename.WriteString("/cputemps.json")
-	cpuTempsj, _ := json.Marshal(*cpuTemps)
-	err = os.WriteFile(filename.String(), cpuTempsj, 0644)
-	if err != nil {
-		return err
-	}
-	return err
-}
 
 func main() {
 	// find out where the gwagent config file is and read it in
@@ -126,13 +79,13 @@ func main() {
 	defer prunetick.Stop()
 
 	// do an initial export of data as it stands
-	err = exportJSON()
-	if err != nil {
-		log.Printf("couldn't export to json: %s\n", err)
-	}
+	//err = exportJSON()
+	//if err != nil {
+	//		log.Printf("couldn't export to json: %s\n", err)
+	//}
 	// then launch a ticker to export every 5 min
-	jsontick := time.NewTicker(time.Duration(config.Files.JsonInt) * time.Second)
-	defer jsontick.Stop()
+	//jsontick := time.NewTicker(time.Duration(config.Files.JsonInt) * time.Second)
+	//defer jsontick.Stop()
 
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
@@ -158,11 +111,11 @@ func main() {
 				// anything else we'll log to the console
 				log.Printf("petrel: %s\n", msg)
 			}
-		case <-jsontick.C:
-			err := exportJSON()
-			if err != nil {
-				log.Printf("couldn't export to json: %s\n", err)
-			}
+	       //case <-jsontick.C:
+			//err := exportJSON()
+			//if err != nil {
+			//	log.Printf("couldn't export to json: %s\n", err)
+			//}
 		case <-prunetick.C:
 			dbPruneMigrate()
 		case <-sigchan:

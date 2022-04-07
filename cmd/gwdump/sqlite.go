@@ -2,13 +2,17 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"log"
 	"time"
 
 	"github.com/firepear/gnatwren/internal/data"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+func dbSetup(dbloc string) (*sql.DB, error) {
+	// Open the database
+	db, err := sql.Open("sqlite3", dbloc)
+	return db, err
+}
 
 func dbLoadNodeStatus() {
 	// build nodeStatus from data in DB on startup, which lets exportJSON work
@@ -76,7 +80,7 @@ func dbGetCPUStats(duration string) (*map[int64]map[string]string, error) {
  	// timestamp, one hour ago. we don't want anything older than
  	// this
  	var tlimit int64
-	select duration {
+	switch duration {
 	case "current":
 		tlimit = time.Now().Unix() - 3600
 	case "hourly":

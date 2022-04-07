@@ -12,12 +12,12 @@ COPY . /gwg/
 WORKDIR cmd/gwgather
 ENV CGO_ENABLED=1 CGO_CFLAGS="-DSQLITE_ENABLE_JSON1"
 RUN go build
-WORKDIR ../gwdump
+WORKDIR /gwg/cmd/gwdump
 RUN go build
 
 
 FROM nginx:stable-alpine
 RUN apk --no-cache add busybox sqlite
-COPY --from=builder /gwg/cmd/gwgather/gwgather /gwg/cmd/gwgather/gwdump /gwg/assets/dockerstart.sh /usr/local/bin/
-COPY --from=builder /gwg/gwgather-config.json /etc/gwgather-config.json
+COPY --from=builder /gwg/cmd/gwgather/gwgather /gwg/cmd/gwdump/gwdump /gwg/assets/dockerstart.sh /usr/local/bin/
+COPY --from=builder /gwg/assets/gwgather-config.json /etc/gwgather-config.json
 CMD ["/usr/local/bin/dockerstart.sh"]

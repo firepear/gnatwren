@@ -18,7 +18,8 @@ type GatherConfig struct {
 
 type GatherAlertConfig struct {
 	LateCheck int64 `json:"late_checkin"`
-	OverTemp  int64 `json:"over_temp"`
+	TempWarn  int64 `json:"temp_warn"`
+	TempCrit  int64 `json:"temp_crit"`
 }
 
 type GatherDBConfig struct {
@@ -28,7 +29,6 @@ type GatherDBConfig struct {
 }
 
 type GatherFileConfig struct {
-	Enabled bool   `json:"enabled"`
 	JsonLoc string `json:"json_location"`
 	JsonInt int64  `json:"json_interval"`
 }
