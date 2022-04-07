@@ -2,7 +2,8 @@
     "bind_addr": "0.0.0.0:11099",
     "alerts": {
         "late_checkin": 90,
-        "over_temp": 80
+        "temp_warn": 80
+        "temp_crit": 90
     },
     "db": {
         "location": "/usr/share/nginx/html/gnatwren.db",
