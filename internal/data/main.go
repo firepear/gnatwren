@@ -59,7 +59,6 @@ type AgentPayload struct {
 type CPUdata struct {
 	Name   string
 	Cores  map[string]string
-	Avgclk float64
 	Temp   float64
 }
 
