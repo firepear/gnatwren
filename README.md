@@ -58,20 +58,9 @@ Re-run the build script anytime. No monitoring data will be lost.
 
 #### gwgather
 
-- `go build ./cmd/gwgather`
-- `mv ./cmd/gwgather/gwgather /usr/local/bin`
-- A systemd unit file for `gwgather` is at
-  `./assets/gnatwren-gather.service`
-  - It should be deployed according to systemd standards on the
-    aggregator node
-- A config file for `gwgather` is at `./assets/gwgather-config.json`
-  - Edit and deploy to `/etc/gnatwren/gwgather-config.json` on the
-    aggregator node
-  - It must be readable by the user `nobody`
-- Make sure that the location you've defined for `gwgather`'s DB is
-  writable by user `nobody`
-- Enable and start the `gnatwren-gather` service on the aggregator
-  node
+Examining the build script and Dockerfile will show everything that is
+needed and how it's done. It's very straightforward and should be
+adaptable to any situation without much effort.
 
 #### gwagent
 
