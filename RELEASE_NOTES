@@ -1,3 +1,30 @@
+0.11.0 - 2022-04-07
+--------------------------------------------------------------------
+
+    [gwagent]
+
+    * Enabled GPU info reporting, beginning with Nvidia
+      cards
+
+    [gwdump]
+
+    * Changed JSON output filenames
+
+    * There are now 7 JSON files produced: the current machine stats
+      file, three files for CPU temps (past-hour, hourly, daily), and
+      three in the same format for GPU temps
+
+
+0.10.0 - 2021-11-27
+--------------------------------------------------------------------
+
+    * Finished removal of gwquery and its supporting code
+
+    * Removed JSON dump functionality from gwgather; it has been
+      placed in a new utility named gwdump which runs periodicaly in
+      gwgather's container
+
+
 0.9.1 - 2021-11-27
 --------------------------------------------------------------------
 

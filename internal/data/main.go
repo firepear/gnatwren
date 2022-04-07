@@ -47,6 +47,7 @@ type AgentPayload struct {
 	Arch string
 	TS int64
 	Cpu CPUdata
+	Gpu GPUdata
 	Mem [3]int
 	Ldavg string
 	Upt string
@@ -60,4 +61,13 @@ type CPUdata struct {
 	Cores  map[string]string
 	Avgclk float64
 	Temp   float64
+}
+
+type GPUdata struct {
+	Name    string
+	TempCur int64
+	TempMax int64
+	Fan     int64
+        PowCur  float64
+	PowMax  float64
 }

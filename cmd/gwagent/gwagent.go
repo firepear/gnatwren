@@ -25,6 +25,7 @@ var (
 	mux = &sync.RWMutex{}
 	stow = "/var/run/gnatwren/agent_metrics.log"
 	arch = ""
+	gpumanu = ""
 	hostname = ""
 )
 
@@ -37,6 +38,7 @@ func gatherMetrics() ([]byte, error) {
 	metrics.Host = hostname
 	metrics.TS = time.Now().Unix()
 	metrics.Cpu = hwmon.Cpuinfo()
+	metrics.Gpu = hwmon.Gpuinfo(gpumanu)
 	metrics.Mem = hwmon.Meminfo()
 	metrics.Ldavg = hwmon.Loadinfo()
 	metrics.Upt = hwmon.Uptime()
@@ -181,9 +183,10 @@ func main() {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
 
-	// get machine architecture and hostname, once
+	// get machine architecture, hostname, and gpu maker, once
 	arch = hwmon.Arch()
 	hostname, _ = os.Hostname()
+	gpumanu = hwmon.GpuManu()
 
 	// handle any saved metrics, synchronously, if we have them
 	c := make(chan error)
