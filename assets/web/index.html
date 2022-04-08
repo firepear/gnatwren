@@ -23,9 +23,11 @@
       <table>
         <thead>
           <th>Node</th>
-          <th>CPU Desc : Thd : Tmp : Clock</th>
+          <th>CPU Desc</th>
+          <th>Temp</th>
+          <th>Clock</th>
           <th>Uptime</th>
-          <th>Loadavg</th>
+          <th>Ldavg</th>
           <th>Mem Tot : Free : Avail</th>
           <th>GPU Desc : Temp : Pwr : Fan</th>
         </thead>
@@ -113,8 +115,16 @@
             tdName.setAttribute('class', 'first');
             // mach desc
             var tdDesc = document.createElement("td");
-            var descTxt = document.createTextNode(`${metric['Cpu']['Name']} : ${ Object.keys(metric['Cpu']['Cores']).length } : ${Number(metric['Cpu']['Temp']).toFixed(2)}C : ${Math.floor(metric['Cpu']['Avgclk'])}MHz`);
+            var descTxt = document.createTextNode(`${metric['Cpu']['Name']}`);
             tdDesc.appendChild(descTxt);
+            // cpu temp
+            var tdTemp = document.createElement("td");
+            var tempTxt = document.createTextNode(`${Number(metric['Cpu']['Temp']).toFixed(2)}C`);
+            tdTemp.appendChild(tempTxt);
+            // cpu clock
+            var tdClk = document.createElement("td");
+            var clkTxt = document.createTextNode(`${Math.floor(metric['Cpu']['Avgclk'])}MHz`);
+            tdClk.appendChild(clkTxt);
             // uptime
             var uptime = metric['Upt'];
             var upd = Math.floor(uptime / 86400);
@@ -147,6 +157,8 @@
             // add all to the row
             tr.appendChild(tdName);
             tr.appendChild(tdDesc);
+            tr.appendChild(tdTemp);
+            tr.appendChild(tdClk);
             tr.appendChild(tdUp);
             tr.appendChild(tdLdavg);
             tr.appendChild(tdMemun);
