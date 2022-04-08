@@ -46,6 +46,7 @@
     var url = "http://localhost:9098";
     var nodes;
     var metrics;
+    var last_seen = {};
 
     var refresh = 120;
     var past_due = 90;
@@ -131,8 +132,8 @@
             // last checkin
             var tdLast = document.createElement("td");
             var ts = Date.now() / 1000;
-            var delta = ts - metric['TS'];
-            var lastTxt = document.createTextNode(`${Math.floor(delta)}s`);
+            last_seen[host] = ts - metric['TS'];
+            var lastTxt = document.createTextNode(`${Math.floor(last_seen[host])}s`);
             tdLast.appendChild(lastTxt);
             tdLast.style.textAlign = 'right';
             // mach desc
