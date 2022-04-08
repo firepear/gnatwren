@@ -23,7 +23,7 @@
 
   [web]
 
-    * Clock is now computed
+    * GPU data now shown in system stats
 
     * Hovering over Clock displays a tooltip with per-core clocks
 

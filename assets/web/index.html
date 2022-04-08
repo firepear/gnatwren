@@ -23,7 +23,6 @@
       <table>
         <thead>
           <th>Node</th>
-          <th>Last</th>
           <th>CPU Desc</th>
           <th>Temp</th>
           <th>Clock</th>
@@ -32,8 +31,9 @@
           <th>Mem Tot : Free : Avail</th>
           <th>GPU Desc</th>
           <th>Temp</th>
-          <th>Pwr</th>
           <th>Fan</th>
+          <th>Pwr</th>
+          <th>Last</th>
         </thead>
         <tbody id="machdata">
         </tbody>
@@ -46,6 +46,12 @@
     var url = "http://localhost:9098";
     var nodes;
     var metrics;
+
+    var refresh = 120;
+    var past_due = 90;
+    var temp_warn = 80;
+    var temp_crit = 90;
+
     var machSReq = new XMLHttpRequest();
     machSReq.addEventListener("load", plotMachStats);
 
@@ -96,6 +102,8 @@
         }
         // and the node list
         nodes = [];
+        // and a dict for core clock tooltips
+        clocks = {};
 
         // get our data
         metrics = JSON.parse(this.responseText);
@@ -105,9 +113,12 @@
             nodes.push(host);
             // let's calculate Avgclk for the host
             var clktot = 0;
+            var clkstr = "";
             for (let [coreid, clk] of Object.entries(metric['Cpu']['Cores'])) {
                 clktot += parseFloat(clk);
+                clkstr += `Core ${coreid}: ${Math.floor(clk)}MHz\n`;
             }
+            clocks[host] = clkstr;
             metric['Cpu']['Avgclk'] = clktot / Object.keys(metric['Cpu']['Cores']).length;
 
             // now get on with constructing the document
@@ -134,8 +145,11 @@
             tdTemp.appendChild(tempTxt);
             // cpu clock
             var tdClk = document.createElement("td");
+            var clkSpan = document.createElement("span");
             var clkTxt = document.createTextNode(`${Math.floor(metric['Cpu']['Avgclk'])}MHz`);
-            tdClk.appendChild(clkTxt);
+            clkSpan.title = clocks[host];
+            clkSpan.appendChild(clkTxt);
+            tdClk.appendChild(clkSpan);
             // uptime
             var uptime = metric['Upt'];
             var upd = Math.floor(uptime / 86400);
@@ -165,6 +179,11 @@
             var memunTxt = document.createTextNode(`${memtot.toFixed(2)}GB : ${memun.toFixed(2)}% : ${memav.toFixed(2)}%`);
             tdMemun.appendChild(memunTxt);
             tdMemun.style.textAlign = 'right';
+            var tdGdesc = document.createElement("td");
+            var tdGtemp = document.createElement("td");
+            var tdGfan = document.createElement("td");
+            var tdGpow = document.createElement("td");
+
             // add all to the row
             tr.appendChild(tdName);
             tr.appendChild(tdLast);
@@ -174,6 +193,11 @@
             tr.appendChild(tdUp);
             tr.appendChild(tdLdavg);
             tr.appendChild(tdMemun);
+            tr.appendChild(tdGdesc);
+            tr.appendChild(tdGtemp);
+            tr.appendChild(tdGfan);
+            tr.appendChild(tdGpow);
+            tr.appendChild(tdLast);
             tbody.appendChild(tr);
         }
         // sort the nodes list
