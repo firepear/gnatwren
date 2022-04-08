@@ -23,20 +23,24 @@
       <table>
         <thead>
           <th>Node</th>
+          <th>Last</th>
           <th>CPU Desc</th>
           <th>Temp</th>
           <th>Clock</th>
           <th>Uptime</th>
           <th>Ldavg</th>
           <th>Mem Tot : Free : Avail</th>
-          <th>GPU Desc : Temp : Pwr : Fan</th>
+          <th>GPU Desc</th>
+          <th>Temp</th>
+          <th>Pwr</th>
+          <th>Fan</th>
         </thead>
         <tbody id="machdata">
         </tbody>
       </table>
     </div>
-    <div class="chart" id="cputemps" style="height:350px;"></div>
-    <div class="chart" id="cpuavg" style="height:350px;"></div>
+    <div class="chart" id="cputemps" style="height:500px;"></div>
+    <!-- <div class="chart" id="cpuavg" style="height:350px;"></div> -->
   </body>
   <script>
     var url = "http://localhost:9098";
@@ -113,6 +117,13 @@
             var nameTxt = document.createTextNode(`${host}`);
             tdName.appendChild(nameTxt);
             tdName.setAttribute('class', 'first');
+            // last checkin
+            var tdLast = document.createElement("td");
+            var ts = Date.now() / 1000;
+            var delta = ts - metric['TS'];
+            var lastTxt = document.createTextNode(`${Math.floor(delta)}s`);
+            tdLast.appendChild(lastTxt);
+            tdLast.style.textAlign = 'right';
             // mach desc
             var tdDesc = document.createElement("td");
             var descTxt = document.createTextNode(`${metric['Cpu']['Name']}`);
@@ -156,6 +167,7 @@
             tdMemun.style.textAlign = 'right';
             // add all to the row
             tr.appendChild(tdName);
+            tr.appendChild(tdLast);
             tr.appendChild(tdDesc);
             tr.appendChild(tdTemp);
             tr.appendChild(tdClk);
@@ -215,6 +227,6 @@
     //cpuAReq.addEventListener("load", plotCPUAvgs);
 
     getMachStats();
-    setInterval(getMachStats, 300000);
+    setInterval(getMachStats, 120000);
   </script>
 </html>
