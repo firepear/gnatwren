@@ -33,9 +33,12 @@ The following events are shown on the web status page:
 
 ## Visualization
 
-Not much yet, but it's in-work, along with everything else:
+Still a work in progress, but this screenshot shows some new v0.11.0
+features: per-core clocks when hovering over the averaged clock, and a
+critical warning indicator for a machine that has not checked in
+recently.
 
-![Early viz](https://i.imgur.com/rXqfwae.png)
+![wip viz](https://i.imgur.com/439fRud.png)
 
 ## Efficiency
 
