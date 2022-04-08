@@ -89,18 +89,20 @@
 
         metrics = JSON.parse(this.responseText);
 
-        nodes = [];
-        for (let host in metrics) {
-            nodes.push(host);
-        }
-        nodes.sort();
+        for (let [host, metric] of Object.entries(metrics)) {
+            // first, let's calculate Avgclk
+            var clktot = 0;
+            for (let [coreid, clk] of Object.entries(metric['Cpu']['Cores'])) {
+                clktot += parseFloat(clk);
+            }
+            console.log(clktot)
+            metric['Cpu']['Avgclk'] = clktot / Object.keys(metric['Cpu']['Cores']).length;
 
-        for (let i in nodes) {
-            var metric = metrics[nodes[i]]['Payload'];
+            // now get on with constructing the document
             var tr = document.createElement("tr");
             // machine name
             var tdName = document.createElement("td");
-            var nameTxt = document.createTextNode(`${nodes[i]}`);
+            var nameTxt = document.createTextNode(`${host}`);
             tdName.appendChild(nameTxt);
             tdName.setAttribute('class', 'first');
             // mach desc
