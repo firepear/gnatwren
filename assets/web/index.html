@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
@@ -82,20 +83,25 @@
     }
 
     function plotMachStats() {
+        // wipe any existing elements
         const tbody = document.getElementById("machdata");
         while (tbody.firstChild) {
             tbody.removeChild(tbody.lastChild);
         }
+        // and the node list
+        nodes = [];
 
+        // get our data
         metrics = JSON.parse(this.responseText);
 
         for (let [host, metric] of Object.entries(metrics)) {
-            // first, let's calculate Avgclk
+            // first, add this host to the list of nodes
+            nodes.push(host);
+            // let's calculate Avgclk for the host
             var clktot = 0;
             for (let [coreid, clk] of Object.entries(metric['Cpu']['Cores'])) {
                 clktot += parseFloat(clk);
             }
-            console.log(clktot)
             metric['Cpu']['Avgclk'] = clktot / Object.keys(metric['Cpu']['Cores']).length;
 
             // now get on with constructing the document
@@ -146,8 +152,9 @@
             tr.appendChild(tdMemun);
             tbody.appendChild(tr);
         }
-
-        // now that nodes is populated, we can draw graphs
+        // sort the nodes list
+        nodes.sort();
+        // and now that System Data table is populated, we can draw graphs
         getCPUTemps();
     }
 
