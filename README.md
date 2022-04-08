@@ -9,18 +9,27 @@ _Image credit: Fernando Burgalin Sequeria, via ebird/the Macaulay Library_
 **This software is under initial development, and is not yet suitable
 for use or deployment**
 
+Current release: 0.11.0, 2022-04-08
+
 ## Metrics and events
 
 Reporting of the following data is implemented for x86 and Raspberry Pi:
 
 - CPU name and average frequencies
 - CPU temperature (AMD K10 and Pi only)
-- GPU name and temperature (AMD and NVidia)
+- GPU name, temperature, fan speed, and power use (WIP; NVidia only)
 - Total system, free, and available memory
 - Uptime
 - Loadavg
+- Time since last check-in
 
-No events are yet being detected.
+The following events are shown on the web status page:
+
+- CPU temperature
+  - Warning status if over 80C
+  - Critical status if over 90C
+- Last check-in
+  - Critical status if more than 210s overdue
 
 ## Visualization
 
