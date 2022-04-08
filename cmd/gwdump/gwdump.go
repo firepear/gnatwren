@@ -6,14 +6,9 @@ import (
 	"flag"
 	"log"
 	"os"
-	//	"os/signal"
-	//"strconv"
 	"strings"
 	"sync"
-	//"syscall"
-	//"time"
 
-	//"github.com/firepear/petrel"
 	"github.com/firepear/gnatwren/internal/data"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -31,37 +26,23 @@ var (
 )
 
 func exportOverview() error {
-	machStats, err := dbGetOverview()
+	machStatus, err := dbGetOverview()
 	if err != nil {
 		return err
 	}
 	var filename strings.Builder
 	var data []byte
+
 	filename.WriteString(config.Files.JsonLoc)
 	filename.WriteString("/overview.json")
-	//data = append(data, []byte("{")...)
-	//i := 1
-	//for host, metrics := range *machStats {
-	//	data = append(data, []byte(`"`)...)
-	//	data = append(data, []byte(host)...)
-	//	data = append(data, []byte(`": {"TS":`)...)
-	//	data = append(data, []byte(strconv.FormatInt(metrics.TS, 10))...)
-	//	data = append(data, []byte(`,"Payload":`)...)
-	//	data = append(data, []byte(metrics.Payload)...)
-	//	data = append(data, []byte(`}`)...)
-	//	if i < len(*machStats) {
-	//		data = append(data, []byte(`,`)...)
-	//	}
-	//	i++
-	//}
-	//data = append(data, []byte("}")...)
-	data, _ = json.Marshal(*machStats)
+	data, _ = json.Marshal(*machStatus)
 	err = os.WriteFile(filename.String(), data, 0644)
 	return err
 }
 
 func exportCpuTemps(duration string) error {
 	cpuTemps, err := dbGetCPUStats(duration)
+	//log.Printf("cputemps: %v\n", cpuTemps)
 	if err != nil {
 		return err
 	}
@@ -101,10 +82,10 @@ func main() {
 
 	err = exportOverview()
 	if err != nil {
-		log.Printf("couldn't export to json: %s\n", err)
+		log.Printf("couldn't export overview to json: %s\n", err)
 	}
 	err = exportCpuTemps("current")
 	if err != nil {
-		log.Printf("couldn't export to json: %s\n", err)
+		log.Printf("couldn't export current cpu temps to json: %s\n", err)
 	}
 }

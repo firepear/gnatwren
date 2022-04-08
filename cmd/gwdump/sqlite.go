@@ -1,8 +1,9 @@
 package main
 
 import (
+	"log"
 	"database/sql"
-	"time"
+	"encoding/json"
 
 	"github.com/firepear/gnatwren/internal/data"
 	_ "github.com/mattn/go-sqlite3"
@@ -43,32 +44,26 @@ func dbLoadNodeStatus() {
 	}
 }
 
-func dbGetOverview() (*map[string]data.AgentStatus, error) {
-	// copy the nodeStatus to minimize time it's locked
-	nodeCopy := map[string][2]int64{}
-	mux.RLock()
-	for k, v := range nodeStatus {
-		nodeCopy[k] = v
-	}
-	mux.RUnlock()
-
+func dbGetOverview() (*map[string]data.AgentPayload, error) {
  	// make a map to hold the metrics
- 	metrics := map[string]data.AgentStatus{}
+ 	metrics := map[string]data.AgentPayload{}
+	// and vars to hold each datum from the query
+	var ts int64
+	var host, mstr string
 
-	// loop over nodeCopy, getting the most recently inserted row
-	// for each machine and adding it to metrics
-	var err error
-	for host, hostTs := range nodeCopy {
-		row := db.QueryRow("SELECT data FROM current WHERE ts = ? AND host = ?", hostTs[1], host)
-		var m data.AgentStatus
-		if err = row.Scan(&m.Payload); err != nil {
-			// this used to barf on no data. now it
-			// doesn't, but the right thing to do is
-			// something more useful TODO
-			continue
+	// get most recent row for each host
+	rows, err := db.Query("SELECT max(ts), host, data FROM current GROUP BY host ORDER BY host")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	// iterate over rows, vivifying `data` and assembling metrics
+	for rows.Next() {
+		if err = rows.Scan(&ts, &host, &mstr); err != nil {
+			return nil, err
 		}
-
-		m.TS = hostTs[1]
+		var m data.AgentPayload
+		err = json.Unmarshal([]byte(mstr), &m)
 		metrics[host] = m
 	}
 	return &metrics, err
@@ -77,22 +72,23 @@ func dbGetOverview() (*map[string]data.AgentStatus, error) {
 func dbGetCPUStats(duration string) (*map[int64]map[string]string, error) {
  	// map of temps (by timestamp, by host), to be returned
  	t := map[int64]map[string]string{}
- 	// timestamp, one hour ago. we don't want anything older than
- 	// this
- 	var tlimit int64
+	//
+ 	var rows *sql.Rows
+	var err error
+
 	switch duration {
 	case "current":
-		tlimit = time.Now().Unix() - 3600
+		rows, err = db.Query("SELECT ts, host, json_extract(data, '$.Cpu.Temp') FROM current ORDER BY ts")
 	case "hourly":
-		tlimit = time.Now().Unix() - 3600
+		rows, err = db.Query("SELECT ts, host, json_extract(data, '$.Cpu.Temp') FROM hourly ORDER BY ts")
 	case "daily":
-		tlimit = time.Now().Unix() - 3600
+		rows, err = db.Query("SELECT ts, host, json_extract(data, '$.Cpu.Temp') FROM daily ORDER BY ts")
 	}
-
-	rows, err := db.Query("SELECT ts, host, json_extract(data, '$.Cpu.Temp') FROM ? WHERE ts >= ?", duration, tlimit)
 	if err != nil {
+		log.Printf("cpustats %s query failed: %s\n", duration, err)
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var ts int64
 		var host string
