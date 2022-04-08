@@ -11,6 +11,8 @@
       td { padding: 5px; background-color: #eee; }
       td.first { background-color: #ccc; }
       tr:hover > td { background-color: #cdf; }
+      .warn { background-color: #f5bf42; font-weight: bold; }
+      .crit { background-color: #cc0e0e; color: #eee; font-weight: bold; }
       .chart { background-color: #fff; border: medium solid #69f; border-radius: 10px;
                margin-left: 5%; margin-right: 5%; margin-bottom: 1%; padding: 10px;
                width: 90%; }
@@ -136,13 +138,22 @@
             var lastTxt = document.createTextNode(`${Math.floor(last_seen[host])}s`);
             tdLast.appendChild(lastTxt);
             tdLast.style.textAlign = 'right';
+            if (last_seen[host] > refresh + past_due) {
+                tdLast.className = 'crit';
+            }
             // mach desc
             var tdDesc = document.createElement("td");
             var descTxt = document.createTextNode(`${metric['Cpu']['Name']}`);
             tdDesc.appendChild(descTxt);
             // cpu temp
             var tdTemp = document.createElement("td");
-            var tempTxt = document.createTextNode(`${Number(metric['Cpu']['Temp']).toFixed(2)}C`);
+            var tempNum = Number(metric['Cpu']['Temp']).toFixed(2);
+            var tempTxt = document.createTextNode(`${tempNum}C`);
+            if (tempNum > temp_crit) {
+                tdTemp.className = 'crit';
+            } else if (tempNum > temp_warn) {
+                tdTemp.className = 'warn';
+            }
             tdTemp.appendChild(tempTxt);
             // cpu clock
             var tdClk = document.createElement("td");
