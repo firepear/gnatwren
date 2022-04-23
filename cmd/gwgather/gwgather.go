@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/firepear/petrel"
 	"github.com/firepear/gnatwren/internal/data"
 	_ "github.com/mattn/go-sqlite3"
+	ps "github.com/firepear/petrel/server"
 )
 
 
@@ -46,13 +46,13 @@ func main() {
 	}
 
 	// configure the petrel server
-	pc := &petrel.ServerConfig{
+	pc := &ps.ServerConfig{
                 Sockname: config.BindAddr,
-                Msglvl: petrel.Error,
+                Msglvl: ps.Error,
 		Timeout: 5,
         }
 	// and instantiate it
-	petrel, err := petrel.TCPServer(pc)
+	petrel, err := ps.TCPServer(pc)
         if err != nil {
                 log.Printf("could not instantiate Server: %s\n", err)
                 os.Exit(1)
