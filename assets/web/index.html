@@ -82,7 +82,7 @@
                 if (host in temps_in[ts]) {
                     tl[host] = temps_in[ts][host];
                     curData.push(temps_in[ts][host]);
-                } else {
+               } else {
                     curData.push(tl[host]);
                 }
             }
@@ -114,7 +114,7 @@
         for (let [host, metric] of Object.entries(metrics)) {
             // first, add this host to the list of nodes
             nodes.push(host);
-            // let's calculate Avgclk for the host
+            // lets calculate Avgclk for the host
             var clktot = 0;
             var clkstr = "";
             for (let [coreid, clk] of Object.entries(metric['Cpu']['Cores'])) {
@@ -191,10 +191,22 @@
             var memunTxt = document.createTextNode(`${memtot.toFixed(2)}GB : ${memun.toFixed(2)}% : ${memav.toFixed(2)}%`);
             tdMemun.appendChild(memunTxt);
             tdMemun.style.textAlign = 'right';
+            // gpu desc
             var tdGdesc = document.createElement("td");
+            var gdescTxt = document.createTextNode(`${metric['Gpu']['Name']}`);
+            tdGdesc.appendChild(gdescTxt);
+            // GPU temp
             var tdGtemp = document.createElement("td");
+            var gtempTxt = document.createTextNode(`${metric['Gpu']['TempCur']} / ${metric['Gpu']['TempMax']}`);
+            tdGtemp.appendChild(gtempTxt);
+            // GPU fan speed
             var tdGfan = document.createElement("td");
+            var gfanTxt = document.createTextNode(`${metric['Gpu']['Fan']}`);
+            tdGfan.appendChild(gfanTxt);
+            // GPU power use
             var tdGpow = document.createElement("td");
+            var gpowTxt = document.createTextNode(`${metric['Gpu']['PowCur']} / ${metric['Gpu']['PowMax']}`);
+            tdGpow.appendChild(gpowTxt);
 
             // add all to the row
             tr.appendChild(tdName);
