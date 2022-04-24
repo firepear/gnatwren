@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/firepear/gnatwren/internal/data"
@@ -169,20 +170,32 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 
 // GpuinfoAMD gathers GPU status data for AMD GPUs.
 func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
-	// relevant files are:
-	//   temp1_input, temp1_crit
+	log.Println(loc)
 	//   power1_average, power1_cap_max
 	//   fan1_input, fan1_max
-	//   device (to get PCI ID)
-	//
-	// find GPU name by reading /usr/share/hwdata/pci.ids
-	//   scan until line matching /^1002/
-	//   then scan for /\tPCIID/ # minus the leading '0x'
-	/*var (
-		tempCur string
-		tempCrit string
-		powerCur string
-		powerMax string
-		fanSpeed string
-	)*/
+
+	// temperature data
+	file, err := os.Open(fmt.Sprintf("%s/temp1_input", loc))
+	if err != nil {
+		gpudata.TempCur = "N/A"
+	} else {
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		scanner.Scan()
+		temp_num, _ := strconv.ParseFloat(scanner.Text(), 64)
+		gpudata.TempCur = fmt.Sprintf("%.2fC", temp_num / 1000.0)
+		file.Close()
+	}
+	file, err = os.Open(fmt.Sprintf("%s/temp1_crit", loc))
+	if err != nil {
+		gpudata.TempMax = "N/A"
+	} else {
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		scanner.Scan()
+		temp_num, _ := strconv.ParseFloat(scanner.Text(), 64)
+		gpudata.TempMax = fmt.Sprintf("%.2fC", temp_num / 1000.0)
+		file.Close()
+	}
+
 }
