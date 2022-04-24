@@ -1,3 +1,13 @@
+0.13.0 - 2022-04-xx
+--------------------------------------------------------------------
+
+  [gwdump]
+
+    * There are now 7 JSON files produced: the current machine stats
+      file, three files for CPU temps (past-hour, hourly, daily), and
+      three in the same format for GPU temps
+
+
 0.12.0 - 2022-04-xx
 --------------------------------------------------------------------
 
@@ -6,11 +16,8 @@
     * Enabled GPU info reporting, beginning with Nvidia
       cards
 
-  [gwdump]
-
-    * There are now 7 JSON files produced: the current machine stats
-      file, three files for CPU temps (past-hour, hourly, daily), and
-      three in the same format for GPU temps
+    * Metrics stashing dir is (re)created if it doesn't exist, and
+      there is an attept to stash
 
 
 0.11.0 - 2022-04-08

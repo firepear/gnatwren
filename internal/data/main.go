@@ -64,9 +64,9 @@ type CPUdata struct {
 
 type GPUdata struct {
 	Name    string
-	TempCur int64
-	TempMax int64
-	Fan     int64
-        PowCur  float64
-	PowMax  float64
+	TempCur string
+	TempMax string
+	Fan     string
+        PowCur  string
+	PowMax  string
 }

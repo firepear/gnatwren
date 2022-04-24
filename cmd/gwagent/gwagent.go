@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"os"
@@ -138,7 +139,6 @@ func sendUndeliveredMetrics(pconf *pc.ClientConfig, c chan error) {
 		return
 	}
 	defer f.Close()
-	log.Printf("found stowed metrics\n")
 
 	// read the file line-by-line and report the metrics inside
 	petok := true
@@ -147,7 +147,7 @@ func sendUndeliveredMetrics(pconf *pc.ClientConfig, c chan error) {
 		m := scanner.Bytes()
 		// TODO handle the actual response, to know how not to count dupes
 		_, err = pet.Dispatch(append(req, m...))
-		if err != nil {
+		if err != nil && ! errors.Is(err, io.EOF) {
 			log.Printf("sent %d metrics then hit a problem: %s\n", sent, err)
 			petok = false
 			break
@@ -160,7 +160,7 @@ func sendUndeliveredMetrics(pconf *pc.ClientConfig, c chan error) {
 	if petok {
 		f.Close()
 		os.Remove(stow)
-		log.Printf("sent %d metrics; done\n", sent)
+		log.Printf("sent %d stowed metrics; done\n", sent)
 	}
 	c <- nil
 }
