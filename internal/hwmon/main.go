@@ -19,7 +19,7 @@ func Arch() string {
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
-	return string(arch)
+	return strings.TrimSpace(string(arch))
 }
 
 // Cpuinfo scans /proc/cpuinfo and extracts values for the
