@@ -49,7 +49,7 @@ func GpuName(manu string) string {
 
 	// the other thing we need before starting is to look up our
 	// model id and construct a regexp from it
-	modfile, err := os.Open("/sys/class/drm/card0/device")
+	modfile, err := os.Open("/sys/class/drm/card0/device/device")
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -89,8 +89,8 @@ func GpuName(manu string) string {
 		// section. time to start looking for our card
 		match := rmodel.MatchString(line)
 		if match {
-			// found it! extract the name return it
-			return strings.TrimPrefix(line, fmt.Sprintf("\t%s", modid))
+			// found it! extract the name + return it
+			return strings.TrimPrefix(line, fmt.Sprintf("\t%s  ", modid))
 		}
 	}
 	return "NONE"
@@ -146,7 +146,7 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 		v := strings.TrimSpace(chunks[1])
 		switch k {
 		case "Product Name":
-			gpudata.Name = v
+			gpudata.Name = strings.TrimPrefix(v, "NVIDIA ")
 		case "GPU Current Temp":
 			gpudata.TempCur = strings.ReplaceAll(v, " ", "")
 		case "GPU Shutdown Temp":
