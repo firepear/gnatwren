@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -13,9 +14,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/firepear/petrel"
 	"github.com/firepear/gnatwren/internal/hwmon"
 	"github.com/firepear/gnatwren/internal/data"
+	pc "github.com/firepear/petrel/client"
 )
 
 
@@ -23,7 +24,8 @@ var (
 	req = []byte("agentupdate ")
 	nl = []byte("\n")
 	mux = &sync.RWMutex{}
-	stow = "/var/run/gnatwren/agent_metrics.log"
+	stowdir = "/var/run/gnatwren"
+	stow = fmt.Sprintf("%s/agent_metrics.log", stowdir)
 	arch = ""
 	gpumanu = ""
 	hostname = ""
@@ -47,17 +49,18 @@ func gatherMetrics() ([]byte, error) {
 }
 
 
-func sendMetrics(pc *petrel.ClientConfig) {
+func sendMetrics(pconf *pc.ClientConfig) {
 	// get metrics for this run
 	sample, err := gatherMetrics()
 	// try to instantiate a petrel client
-	c, err := petrel.TCPClient(pc)
+	c, err := pc.TCPClient(pconf)
 	if err != nil {
 		// on failure, stow metrics and return error
 		log.Printf("can't initialize client: %s\n", err)
 		err = stowMetrics(sample)
 		if err != nil {
 			log.Printf("metrics lost: %s\n", err)
+			return
 		}
 		log.Printf("metrics stowed\n")
 		return
@@ -68,10 +71,11 @@ func sendMetrics(pc *petrel.ClientConfig) {
 	_, err = c.Dispatch(append(req, sample...))
 	if err != nil {
 		// on failure, stow metrics
-		log.Printf("can't initialize client: %s\n", err)
+		log.Printf("can't dispatch metrics: %s\n", err)
 		err = stowMetrics(sample)
 		if err != nil {
 			log.Printf("metrics lost: %s\n", err)
+			return
 		}
 		log.Printf("metrics stowed\n")
 	}
@@ -79,6 +83,13 @@ func sendMetrics(pc *petrel.ClientConfig) {
 
 
 func stowMetrics(m []byte) error {
+	// create stowdir if it doesn't exist
+	if _, err := os.Stat(stowdir); errors.Is(err, os.ErrNotExist) {
+		err = os.Mkdir(stowdir, 0755)
+		if err != nil {
+			return err
+		}
+	}
 	// get write lock on the mux, then open the file
 	mux.Lock()
 	defer mux.Unlock()
@@ -97,7 +108,7 @@ func stowMetrics(m []byte) error {
 }
 
 
-func sendUndeliveredMetrics(pc *petrel.ClientConfig, c chan error) {
+func sendUndeliveredMetrics(pconf *pc.ClientConfig, c chan error) {
 	// if the stow file doesn't exist, there's nothing to do
 	if _, err := os.Stat(stow); os.IsNotExist(err) {
 		c <- nil
@@ -112,7 +123,7 @@ func sendUndeliveredMetrics(pc *petrel.ClientConfig, c chan error) {
 
 	sent := 0
 	// try to instantiate a petrel client
-	pet, err := petrel.TCPClient(pc)
+	pet, err := pc.TCPClient(pconf)
 	if err != nil {
 		c <- fmt.Errorf("found stowed metrics but can't connect: %s; deferring\n", err)
 		return
@@ -176,7 +187,7 @@ func main() {
 
 
         // set up client configuration and create client instance
-        pconf := &petrel.ClientConfig{Addr: config.GatherAddr}
+        pconf := &pc.ClientConfig{Addr: config.GatherAddr}
 
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
