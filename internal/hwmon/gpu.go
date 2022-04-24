@@ -2,14 +2,17 @@ package hwmon
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os/exec"
-	"regexp"
+	//"regexp"
 	"strings"
 
 	"github.com/firepear/gnatwren/internal/data"
 )
 
+// GpuManu scrapes the output of `lspci` to determine the manufacturer
+// of a machine's GPU.
 func GpuManu() string {
 	cmd := "/bin/env lspci -mm | grep VGA"
 	vgabytes, err := exec.Command("/bin/env", "bash", "-c", cmd).Output()
@@ -27,25 +30,39 @@ func GpuManu() string {
 	return "intel"
 }
 
+
+// GpuName uses the pci.ids file to find the product name of a
+// GPU. This is not needed for Nvidia GPUs.
 func GpuName(manu string) string {
 	return "WIP"
 }
 
+
+// GpuSysfsLoc looks through the /sys directory tree to find the hwmon
+// directory corresponding to the first GPU in a system. This is later
+// used by `Gpuinfo()`.
 func GpuSysfsLoc() string {
 	return "WIP"
 }
 
+
+// Gpuinfo is a top-level function for gathering GPU data. It will
+// call an appropriate child function, based on GPU manufacturer, to
+// do the actual data gathering.
 func Gpuinfo(manu string) data.GPUdata {
 	var gpudata data.GPUdata
 	if manu == "nvidia" {
 		GpuinfoNvidia(&gpudata)
 	} else if manu == "amd" {
-		gpudata.Name = gpuname
+		//gpudata.Name = gpuname
 		GpuinfoAMD(&gpudata)
 	}
 	return gpudata
 }
 
+// GpuinfoNvidia gethers GPU status data for Nvidia GPUs. Unlike other
+// Gpuinfo* functions, which use sysfs, this function scrapes the
+// output of `nvidia-smi -q`.
 func GpuinfoNvidia(gpudata *data.GPUdata) {
 	nvidiasmi := exec.Command("/usr/bin/nvidia-smi", "-q")
 	stdout, _ := nvidiasmi.StdoutPipe()
@@ -64,20 +81,24 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 		case "Product Name":
 			gpudata.Name = v
 		case "GPU Current Temp":
-			gpudata.TempCur = v
+			gpudata.TempCur = strings.ReplaceAll(v, " ", "")
 		case "GPU Shutdown Temp":
-			gpudata.TempMax = v
+			gpudata.TempMax = strings.ReplaceAll(v, " ", "")
 		case "Fan Speed":
-			gpudata.Fan = v
+			gpudata.Fan = strings.ReplaceAll(v, " ", "")
 		case "Power Draw":
-			gpudata.PowCur = v
+			chunks = strings.Split(v, ".")
+			gpudata.PowCur = fmt.Sprintf("%sW", chunks[0])
 		case "Power Limit":
-			gpudata.PowMax = v
+			chunks = strings.Split(v, ".")
+			gpudata.PowMax = fmt.Sprintf("%sW", chunks[0])
 		}
 	}
 	nvidiasmi.Wait()
 }
 
+
+// GpuinfoAMD gathers GPU status data for AMD GPUs.
 func GpuinfoAMD(gpudata *data.GPUdata) {
 	// available data is at /sys/class/drm/card0/device/hwmon/hwmonN
 	//
@@ -90,4 +111,11 @@ func GpuinfoAMD(gpudata *data.GPUdata) {
 	// find GPU name by reading /usr/share/hwdata/pci.ids
 	//   scan until line matching /^1002/
 	//   then scan for /\tPCIID/ # minus the leading '0x'
+	/*var (
+		tempCur string
+		tempCrit string
+		powerCur string
+		powerMax string
+		fanSpeed string
+	)*/
 }
