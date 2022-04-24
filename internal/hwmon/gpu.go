@@ -106,7 +106,7 @@ func GpuSysfsLoc() string {
 	if err != nil {
 		return "NONE"
 	}
-	return fmt.Sprintf("/sys/class/drm/card0/device/hwmon/%s", gpus[0])
+	return gpus[0]
 }
 
 
