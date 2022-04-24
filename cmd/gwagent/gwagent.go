@@ -49,7 +49,7 @@ func gatherMetrics() ([]byte, error) {
 	metrics.Host = hostname
 	metrics.TS = time.Now().Unix()
 	metrics.Cpu = hwmon.Cpuinfo()
-	metrics.Gpu = hwmon.Gpuinfo(gpumanu)
+	metrics.Gpu = hwmon.Gpuinfo(gpumanu, gpuname, gpuloc)
 	metrics.Mem = hwmon.Meminfo()
 	metrics.Ldavg = hwmon.Loadinfo()
 	metrics.Upt = hwmon.Uptime()
