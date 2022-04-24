@@ -8,7 +8,7 @@
       three in the same format for GPU temps
 
 
-0.12.0 - 2022-04-xx
+0.12.0 - 2022-04-23
 --------------------------------------------------------------------
 
   [gwagent]
@@ -18,6 +18,10 @@
 
     * Metrics stashing dir is (re)created if it doesn't exist, and
       there is an attept to stash
+
+  [web]
+
+    * GPU data now shown in system stats
 
 
 0.11.0 - 2022-04-08
@@ -39,8 +43,6 @@
     * Generally simplified data handling
 
   [web]
-
-    * GPU data now shown in system stats
 
     * Each node's time since last checkin is now shown
 
