@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
-	//"regexp"
+	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/firepear/gnatwren/internal/data"
@@ -34,7 +36,64 @@ func GpuManu() string {
 // GpuName uses the pci.ids file to find the product name of a
 // GPU. This is not needed for Nvidia GPUs.
 func GpuName(manu string) string {
-	return "WIP"
+	var rmanu, rmodel *regexp.Regexp
+
+	// pci.ids is organized by manufacturer, keying off
+	// manufacturer id. manu section lines are the only lines
+	// (other than comments) which do not have leading tabs. so
+	// compile a regexp that lets us find the right section of the
+	// file
+	if manu == "amd" {
+		rmanu, _ = regexp.Compile("^1002")
+	}
+
+	// the other thing we need before starting is to look up our
+	// model id and construct a regexp from it
+	modfile, err := os.Open("/sys/class/drm/card0/device")
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	defer modfile.Close()
+	scanner := bufio.NewScanner(modfile)
+	// one line file, so scan just once, convert to string, and
+	// trim hex marker
+	scanner.Scan()
+	modid := strings.TrimPrefix(scanner.Text(), "0x")
+	// we'll be looking for a line that begins with a tab, then
+	// our model id
+	rmodel, _ = regexp.Compile(fmt.Sprintf("^\t%s", modid))
+
+	// this variable flags when we have found the correct
+	// manufacturer section
+	foundmanu := false
+
+	// open the file and start iterating over each line
+	pcifile, err := os.Open("/usr/share/hwdata/pci.ids")
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	defer pcifile.Close()
+	scanner = bufio.NewScanner(pcifile)
+	for scanner.Scan() {
+		line := scanner.Text()
+		// if we haven't gotten to our manu's section yet,
+		// test to see if we're there now. if so, set the flag
+		if !foundmanu {
+			match := rmanu.MatchString(line)
+			if match {
+				foundmanu = true
+			}
+			continue
+		}
+		// if we make it down here, we're in the right
+		// section. time to start looking for our card
+		match := rmodel.MatchString(line)
+		if match {
+			// found it! extract the name return it
+			return strings.TrimPrefix(line, fmt.Sprintf("\t%s", modid))
+		}
+	}
+	return "NONE"
 }
 
 
@@ -42,20 +101,28 @@ func GpuName(manu string) string {
 // directory corresponding to the first GPU in a system. This is later
 // used by `Gpuinfo()`.
 func GpuSysfsLoc() string {
-	return "WIP"
+	gpus, err := filepath.Glob("/sys/class/drm/card0/device/hwmon/*")
+	if err != nil {
+		return "NONE"
+	}
+	return fmt.Sprintf("/sys/class/drm/card0/device/hwmon/%s", gpus[0])
 }
 
 
 // Gpuinfo is a top-level function for gathering GPU data. It will
 // call an appropriate child function, based on GPU manufacturer, to
 // do the actual data gathering.
-func Gpuinfo(manu string) data.GPUdata {
+func Gpuinfo(manu, name, loc string) data.GPUdata {
 	var gpudata data.GPUdata
+	if loc == "NONE" {
+		return gpudata
+	}
+
 	if manu == "nvidia" {
 		GpuinfoNvidia(&gpudata)
 	} else if manu == "amd" {
-		//gpudata.Name = gpuname
-		GpuinfoAMD(&gpudata)
+		gpudata.Name = name
+		GpuinfoAMD(&gpudata, loc)
 	}
 	return gpudata
 }
@@ -101,9 +168,7 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 
 
 // GpuinfoAMD gathers GPU status data for AMD GPUs.
-func GpuinfoAMD(gpudata *data.GPUdata) {
-	// available data is at /sys/class/drm/card0/device/hwmon/hwmonN
-	//
+func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	// relevant files are:
 	//   temp1_input, temp1_crit
 	//   power1_average, power1_cap_max
