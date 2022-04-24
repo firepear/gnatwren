@@ -85,13 +85,15 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 		case "GPU Shutdown Temp":
 			gpudata.TempMax = strings.ReplaceAll(v, " ", "")
 		case "Fan Speed":
-			gpudata.Fan = strings.ReplaceAll(v, " ", "")
+			if v == "N/A" {
+				gpudata.Fan = v
+			} else {
+				gpudata.Fan = strings.ReplaceAll(v, " ", "")
+			}
 		case "Power Draw":
-			chunks = strings.Split(v, ".")
-			gpudata.PowCur = fmt.Sprintf("%sW", chunks[0])
+			gpudata.PowCur = strings.ReplaceAll(v, " ", "")
 		case "Power Limit":
-			chunks = strings.Split(v, ".")
-			gpudata.PowMax = fmt.Sprintf("%sW", chunks[0])
+			gpudata.PowMax = strings.ReplaceAll(v, " ", "")
 		}
 	}
 	nvidiasmi.Wait()
