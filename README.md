@@ -53,7 +53,7 @@ yet.
 
 ## Installation
 
-### Docker
+### gwgather via Docker
 
 To build and launch a Docker container which runs `gwgather` and an
 instance of `nginx` for web monitoring, run `./build.sh`
@@ -65,6 +65,10 @@ needed, attach with
 
 Re-run the build script anytime. No monitoring data will be lost.
 
+### gwagent via Ansible
+
+My Homefarm project contains an Ansible playbook which will build
+gwagent and deploy it to a set of nodes.
 
 ### Manual install
 

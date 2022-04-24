@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/firepear/gnatwren/internal/data"
@@ -26,11 +27,20 @@ func GpuManu() string {
 	return "intel"
 }
 
+func GpuName(manu string) string {
+	return "WIP"
+}
+
+func GpuSysfsLoc() string {
+	return "WIP"
+}
+
 func Gpuinfo(manu string) data.GPUdata {
 	var gpudata data.GPUdata
 	if manu == "nvidia" {
 		GpuinfoNvidia(&gpudata)
 	} else if manu == "amd" {
+		gpudata.Name = gpuname
 		GpuinfoAMD(&gpudata)
 	}
 	return gpudata

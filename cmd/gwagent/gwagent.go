@@ -25,11 +25,19 @@ var (
 	req = []byte("agentupdate ")
 	nl = []byte("\n")
 	mux = &sync.RWMutex{}
+	// the directory and filename where we stow metrics that we
+	// can't immediately report to gwgather
 	stowdir = "/var/run/gnatwren"
 	stow = fmt.Sprintf("%s/agent_metrics.log", stowdir)
+	// the machine architecture
 	arch = ""
-	gpumanu = ""
+	// hostname
 	hostname = ""
+	// GPU manufacturer, and for non-Nvidia GPUs, the model name
+	// and sysfs directory location
+	gpumanu = ""
+	gpuname = ""
+	gpuloc = ""
 )
 
 
@@ -194,10 +202,16 @@ func main() {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
 
-	// get machine architecture, hostname, and gpu maker, once
+	// get machine architecture, hostname, and gpu maker (plus
+	// other details, sometimes). these things are either
+	// irritating or expensive to fetch, so we do it here, once
 	arch = hwmon.Arch()
 	hostname, _ = os.Hostname()
 	gpumanu = hwmon.GpuManu()
+	if gpumanu == "amd" {
+		gpuname = hwmon.GpuName("amd")
+		gpuloc = hwmon.GpuSysfsLoc()
+	}
 
 	// handle any saved metrics, synchronously, if we have them
 	c := make(chan error)
