@@ -199,6 +199,7 @@
             var tdGtemp = document.createElement("td");
             var gtempTxt = document.createTextNode(`${metric['Gpu']['TempCur']} / ${metric['Gpu']['TempMax']}`);
             tdGtemp.appendChild(gtempTxt);
+            tdGtemp.style.textAlign = 'right';
             // GPU fan speed
             var tdGfan = document.createElement("td");
             var gfanTxt = document.createTextNode(`${metric['Gpu']['Fan']}`);
@@ -207,6 +208,7 @@
             var tdGpow = document.createElement("td");
             var gpowTxt = document.createTextNode(`${metric['Gpu']['PowCur']} / ${metric['Gpu']['PowMax']}`);
             tdGpow.appendChild(gpowTxt);
+            tdGpow.style.textAlign = 'right';
 
             // add all to the row
             tr.appendChild(tdName);
