@@ -30,6 +30,8 @@ func Gpuinfo(manu string) data.GPUdata {
 	var gpudata data.GPUdata
 	if manu == "nvidia" {
 		GpuinfoNvidia(&gpudata)
+	} else if manu == "amd" {
+		GpuinfoAMD(&gpudata)
 	}
 	return gpudata
 }
@@ -64,4 +66,18 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 		}
 	}
 	nvidiasmi.Wait()
+}
+
+func GpuinfoAMD(gpudata *data.GPUdata) {
+	// available data is at /sys/class/drm/card0/device/hwmon/hwmonN
+	//
+	// relevant files are:
+	//   temp1_input, temp1_crit
+	//   power1_average, power1_cap_max
+	//   fan1_input, fan1_max
+	//   device (to get PCI ID)
+	//
+	// find GPU name by reading /usr/share/hwdata/pci.ids
+	//   scan until line matching /^1002/
+	//   then scan for /\tPCIID/ # minus the leading '0x'
 }
