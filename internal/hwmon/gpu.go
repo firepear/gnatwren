@@ -244,7 +244,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
-		fancur, _ = strconv.Atoi(scanner.Text())
+		fanmax, _ = strconv.Atoi(scanner.Text())
 		file.Close()
 	}
 	// calculate % if we can, to match nvidia
