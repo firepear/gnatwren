@@ -183,6 +183,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		num, _ := strconv.Atoi(scanner.Text())
+		// value is in millidegC
 		gpudata.TempCur = fmt.Sprintf("%dC", num / 1000)
 		file.Close()
 	}
@@ -207,7 +208,8 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		num, _ := strconv.ParseFloat(scanner.Text(), 64)
-		gpudata.PowCur = fmt.Sprintf("%.2fW", num / 1000.0)
+		// value is in microW
+		gpudata.PowCur = fmt.Sprintf("%.2fW", num / 1000000.0)
 		file.Close()
 	}
 	file, err = os.Open(fmt.Sprintf("%s/power1_cap_max", loc))
@@ -218,7 +220,39 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		num, _ := strconv.ParseFloat(scanner.Text(), 64)
-		gpudata.PowMax = fmt.Sprintf("%.2fW", num / 1000.0)
+		gpudata.PowMax = fmt.Sprintf("%.2fW", num / 1000000.0)
 		file.Close()
+	}
+
+	// fan data
+	var fancur, fanmax int
+	file, err = os.Open(fmt.Sprintf("%s/fan1_input", loc))
+	if err != nil {
+		fancur = -1
+	} else {
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		scanner.Scan()
+		// value is in RPM, but we need an int to start with
+		fancur, _ = strconv.Atoi(scanner.Text())
+		file.Close()
+	}
+	file, err = os.Open(fmt.Sprintf("%s/fan1_max", loc))
+	if err != nil {
+		fanmax = -1
+	} else {
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		scanner.Scan()
+		fancur, _ = strconv.Atoi(scanner.Text())
+		file.Close()
+	}
+	// calculate % if we can, to match nvidia
+	if fancur > -1 && fanmax > -1 {
+		gpudata.Fan = fmt.Sprintf("%.0f%%", fancur * 100 / fanmax)
+	} else if fancur > -1 {
+		gpudata.Fan = fmt.Sprintf("%dRPM", fancur)
+	} else {
+		gpudata.Fan = "N/A"
 	}
 }
