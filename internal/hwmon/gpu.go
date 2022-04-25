@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	//"strconv"
+	"strconv"
 	"strings"
 
 	"github.com/firepear/gnatwren/internal/data"
@@ -182,9 +182,8 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
-		gpudata.TempMax= strings.TrimSuffix(scanner.Text(), "000")
-		//temp_num, _ := strconv.Atoi(scanner.Text())
-		//gpudata.TempCur = fmt.Sprintf("%dC", temp_num / 1000)
+		num, _ := strconv.Atoi(scanner.Text())
+		gpudata.TempCur = fmt.Sprintf("%dC", num / 1000)
 		file.Close()
 	}
 	file, err = os.Open(fmt.Sprintf("%s/temp1_crit", loc))
@@ -194,8 +193,32 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
-		gpudata.TempMax= strings.TrimSuffix(scanner.Text(), "000")
+		num, _ := strconv.Atoi(scanner.Text())
+		gpudata.TempCur = fmt.Sprintf("%dC", num / 1000)
 		file.Close()
 	}
 
+	// power data
+	file, err = os.Open(fmt.Sprintf("%s/power1_average", loc))
+	if err != nil {
+		gpudata.PowCur = "N/A"
+	} else {
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		scanner.Scan()
+		num, _ := strconv.ParseFloat(scanner.Text(), 64)
+		gpudata.PowCur = fmt.Sprintf("%.2fW", num / 1000.0)
+		file.Close()
+	}
+	file, err = os.Open(fmt.Sprintf("%s/power1_cap_max", loc))
+	if err != nil {
+		gpudata.PowMax = "N/A"
+	} else {
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		scanner.Scan()
+		num, _ := strconv.ParseFloat(scanner.Text(), 64)
+		gpudata.PowCur = fmt.Sprintf("%.2fW", num / 1000.0)
+		file.Close()
+	}
 }
