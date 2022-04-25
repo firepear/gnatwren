@@ -13,14 +13,14 @@ Current release: 0.12.0, 2022-04-23
 
 ## Metrics and events
 
-Reporting of the following data is implemented for x86 and Raspberry Pi:
+Reporting of the following data is implemented:
 
 - CPU name and average frequencies
 - CPU temperature (AMD K10 and Pi only)
-- GPU name, temperature, fan speed, and power use (WIP; NVidia only)
-- Total system, free, and available memory
 - Uptime
 - Loadavg
+- Total, free, and available memory
+- GPU name, temperature, fan speed, and power stats (Nvidia and AMD)
 - Time since last check-in
 
 The following events are shown on the web status page:
@@ -33,12 +33,12 @@ The following events are shown on the web status page:
 
 ## Visualization
 
-Still a work in progress, but this screenshot shows some new v0.11.0
-features: per-core clocks when hovering over the averaged clock, and a
-critical warning indicator for a machine that has not checked in
-recently.
+This screenshot shows some new-since v0.11.0 features: per-core clocks
+when hovering over the averaged clock, aa critical warning indicator
+for machines that have not checked in recently, and GPU data for
+Nvidia and AMD cards.
 
-![wip viz](https://i.imgur.com/439fRud.png)
+![wip viz](https://i.imgur.com/fWPAxVU.png)
 
 ## Efficiency
 
