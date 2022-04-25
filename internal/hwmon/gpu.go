@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strconv"
+	//"strconv"
 	"strings"
 
 	"github.com/firepear/gnatwren/internal/data"
@@ -182,7 +182,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
-		gpudata.TempMax= strings.TrimPostfix(scanner.Text(), "000")
+		gpudata.TempMax= strings.TrimSuffix(scanner.Text(), "000")
 		//temp_num, _ := strconv.Atoi(scanner.Text())
 		//gpudata.TempCur = fmt.Sprintf("%dC", temp_num / 1000)
 		file.Close()
@@ -194,7 +194,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
-		gpudata.TempMax= strings.TrimPostfix(scanner.Text(), "000")
+		gpudata.TempMax= strings.TrimSuffix(scanner.Text(), "000")
 		file.Close()
 	}
 
