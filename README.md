@@ -9,8 +9,6 @@ _Image credit: Fernando Burgalin Sequeria, via ebird/the Macaulay Library_
 **This software is under initial development, and is not yet suitable
 for use or deployment**
 
-Current release: 0.12.0, 2022-04-23
-
 ## Metrics and events
 
 Reporting of the following data is implemented:
