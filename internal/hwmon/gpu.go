@@ -249,7 +249,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	}
 	// calculate % if we can, to match nvidia
 	if fancur > -1 && fanmax > -1 {
-		gpudata.Fan = fmt.Sprintf("%.0f%%", fancur * 100 / fanmax)
+		gpudata.Fan = fmt.Sprintf("%d%%", fancur * 100 / fanmax)
 	} else if fancur > -1 {
 		gpudata.Fan = fmt.Sprintf("%dRPM", fancur)
 	} else {
