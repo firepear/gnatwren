@@ -194,7 +194,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		num, _ := strconv.Atoi(scanner.Text())
-		gpudata.TempCur = fmt.Sprintf("%dC", num / 1000)
+		gpudata.TempMax = fmt.Sprintf("%dC", num / 1000)
 		file.Close()
 	}
 
@@ -218,7 +218,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		num, _ := strconv.ParseFloat(scanner.Text(), 64)
-		gpudata.PowCur = fmt.Sprintf("%.2fW", num / 1000.0)
+		gpudata.PowMax = fmt.Sprintf("%.2fW", num / 1000.0)
 		file.Close()
 	}
 }
