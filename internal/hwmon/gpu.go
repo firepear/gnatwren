@@ -170,7 +170,6 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 
 // GpuinfoAMD gathers GPU status data for AMD GPUs.
 func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
-	log.Println(loc)
 	//   power1_average, power1_cap_max
 	//   fan1_input, fan1_max
 

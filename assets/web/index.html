@@ -204,6 +204,7 @@
             var tdGfan = document.createElement("td");
             var gfanTxt = document.createTextNode(`${metric['Gpu']['Fan']}`);
             tdGfan.appendChild(gfanTxt);
+            tdGfan.style.textAlign = 'right';
             // GPU power use
             var tdGpow = document.createElement("td");
             var gpowTxt = document.createTextNode(`${metric['Gpu']['PowCur']} / ${metric['Gpu']['PowMax']}`);
