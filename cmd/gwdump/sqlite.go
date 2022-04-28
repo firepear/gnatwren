@@ -15,35 +15,6 @@ func dbSetup(dbloc string) (*sql.DB, error) {
 	return db, err
 }
 
-func dbLoadNodeStatus() {
-	// build nodeStatus from data in DB on startup, which lets exportJSON work
-	//
-	// first get a list of hostnames
-	hosts := []string{}
-	rows, err := db.Query("SELECT DISTINCT host FROM current ORDER BY host")
-	if err != nil {
-		return
-	}
-	for rows.Next() {
-		var host string
-		if err = rows.Scan(&host); err != nil {
-			return
-		}
-		hosts = append(hosts, host)
-	}
-
-	// now, for each host, fetch the most recent timestamp and slug it into nodeStatus
-	for _, host := range hosts {
-		row := db.QueryRow("SELECT ts FROM current WHERE host = ? ORDER BY ts DESC LIMIT 1",
-			host)
-		var ts int64
-		if err = row.Scan(&ts); err != nil {
-			return
-		}
-		nodeStatus[host] = [2]int64{ts, ts}
-	}
-}
-
 func dbGetOverview() (*map[string]data.AgentPayload, error) {
  	// make a map to hold the metrics
  	metrics := map[string]data.AgentPayload{}

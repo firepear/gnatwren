@@ -19,9 +19,6 @@ var (
 	config data.GatherConfig
 	// db handle
 	db *sql.DB
-	// nodeStatus holds the last check-in time of nodes running
-	// agents. mux is its lock
-	nodeStatus = map[string][2]int64{}
 	mux sync.RWMutex
 )
 
@@ -77,7 +74,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("sqlite: can't init db: %s", err)
 	}
-	dbLoadNodeStatus()
 	defer db.Close()
 
 	err = exportOverview()
