@@ -114,7 +114,7 @@
         for (let [host, metric] of Object.entries(metrics)) {
             // first, add this host to the list of nodes
             nodes.push(host);
-            // lets calculate Avgclk for the host
+            // lets calculate Avgclk for the host and build the clockspeeds tooltip
             var clktot = 0;
             var clkstr = "";
             for (let [coreid, clk] of Object.entries(metric['Cpu']['Cores'])) {
@@ -137,6 +137,8 @@
             last_seen[host] = ts - metric['TS'];
             var lastTxt = document.createTextNode(`${Math.floor(last_seen[host])}s`);
             tdLast.appendChild(lastTxt);
+            var tsLast = new Date(metric['TS'] * 1000);
+            tdLast.title = tsLast.toTimeString();
             tdLast.style.textAlign = 'right';
             if (last_seen[host] > refresh + past_due) {
                 tdLast.className = 'crit';
@@ -157,11 +159,9 @@
             tdTemp.appendChild(tempTxt);
             // cpu clock
             var tdClk = document.createElement("td");
-            var clkSpan = document.createElement("span");
             var clkTxt = document.createTextNode(`${Math.floor(metric['Cpu']['Avgclk'])}MHz`);
-            clkSpan.title = clocks[host];
-            clkSpan.appendChild(clkTxt);
-            tdClk.appendChild(clkSpan);
+            tdClk.appendChild(clkTxt);
+            tdClk.title = clocks[host];
             // uptime
             var uptime = metric['Upt'];
             var upd = Math.floor(uptime / 86400);
