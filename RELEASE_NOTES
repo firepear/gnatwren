@@ -8,6 +8,24 @@
       three in the same format for GPU temps
 
 
+0.14.0 - 2022-04-28
+--------------------------------------------------------------------
+
+  [gwgather]
+
+    * Simplified data handling for adding metrics to DB
+
+    * Dead code removal
+
+  [gwdump]
+
+    * Removed unneeded node update tracking code + vars
+
+  [web]
+
+    * Hovering over 'Last' now shows update time as a tooltip
+
+
 0.13.0 - 2022-04-24
 --------------------------------------------------------------------
 

@@ -22,7 +22,7 @@ var (
 	config data.GatherConfig
 	// nodeStatus holds the last check-in time of nodes running
 	// agents. mux is its lock
-	nodeStatus = map[string][2]int64{}
+	nodeStatus = map[string]*[2]int64{}
 	mux sync.RWMutex
 	// db handle
 	db *sql.DB
@@ -78,15 +78,6 @@ func main() {
 	prunetick := time.NewTicker(600 * time.Second)
 	defer prunetick.Stop()
 
-	// do an initial export of data as it stands
-	//err = exportJSON()
-	//if err != nil {
-	//		log.Printf("couldn't export to json: %s\n", err)
-	//}
-	// then launch a ticker to export every 5 min
-	//jsontick := time.NewTicker(time.Duration(config.Files.JsonInt) * time.Second)
-	//defer jsontick.Stop()
-
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
@@ -111,11 +102,6 @@ func main() {
 				// anything else we'll log to the console
 				log.Printf("petrel: %s\n", msg)
 			}
-	       //case <-jsontick.C:
-			//err := exportJSON()
-			//if err != nil {
-			//	log.Printf("couldn't export to json: %s\n", err)
-			//}
 		case <-prunetick.C:
 			dbPruneMigrate()
 		case <-sigchan:

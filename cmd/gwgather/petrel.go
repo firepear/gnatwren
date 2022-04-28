@@ -1,11 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
-	"time"
-
-	"github.com/firepear/gnatwren/internal/data"
 )
 
 // the fake, empty response sent back to 'agentupdate'
@@ -13,32 +9,9 @@ import (
 var fresp []byte
 
 func agentUpdate(args [][]byte) ([]byte, error) {
-	// vivify the update data
-	var upd = data.AgentPayload{}
-	err := json.Unmarshal(args[0], &upd)
-	if err != nil {
-		log.Printf("agentUpdate: json unmarshal err: %s", err)
-		return fresp, err
-	}
-
-	// update nodeStatus
-	newTS := [2]int64{}
-	mux.Lock()
-	// the first timestamp is now (check-in ts)
-	newTS[0] = time.Now().Unix()
-	// second timestamp is the hosts's last reporting time (which
-	// can be in the past due to event playback). only update if
-	// the event timestamp is newer than what we have
-	if upd.TS > nodeStatus[upd.Host][1] {
-		newTS[1] = upd.TS
-	} else {
-		newTS[1] = nodeStatus[upd.Host][1]
-	}
-	nodeStatus[upd.Host] = newTS
-
-	// send data to the DB
-	err = dbUpdate(&upd)
-	mux.Unlock()
+	// send data to the DB. we're in blob mode, so all data will
+	// be in the zeroth byteslice
+	err := dbUpdate(args[0])
 	if err != nil {
 		log.Printf("agentUpdate: db err: %s", err)
 	}

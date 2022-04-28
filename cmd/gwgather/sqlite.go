@@ -58,7 +58,7 @@ func dbLoadNodeStatus() {
 		if err = row.Scan(&ts); err != nil {
 			return
 		}
-		nodeStatus[host] = [2]int64{ts, ts}
+		nodeStatus[host] = &[2]int64{ts, ts}
 	}
 }
 
@@ -76,14 +76,6 @@ func dbPruneMigrate() {
 		return
 	}
 
-	// we're still here, so copy nodeStatus
-	nodeCopy := map[string][2]int64{}
-	mux.RLock()
-	for k, v := range nodeStatus {
-		nodeCopy[k] = v
-	}
-	mux.RUnlock()
-
 	// get the newest timestamp from the hourly table
 	c = 0
 	row = db.QueryRow("SELECT ts FROM hourly ORDER BY ts DESC LIMIT 1")
@@ -100,7 +92,7 @@ func dbPruneMigrate() {
 		// for each host, grab the newest row from common --
 		// since we test for the most recent row in hourly
 		// being at least 1h old -- and copy to hourly
-		for host, _ := range nodeCopy {
+		for host, _ := range nodeStatus {
 			var (
 				q = "SELECT ts, data FROM current WHERE host = ? ORDER BY ts DESC LIMIT 1"
 				ts int64
@@ -144,7 +136,7 @@ func dbPruneMigrate() {
 			break
 		}
 		// otherwise, copy most recent data for each host from hourly to daily
-		for host, _ := range nodeCopy {
+		for host, _ := range nodeStatus {
 			var (
 				q = "SELECT ts, data FROM hourly WHERE host = ? ORDER BY ts DESC LIMIT 1"
 				ts int64
@@ -182,15 +174,35 @@ func dbPruneMigrate() {
 }
 
 
-func dbUpdate(upd *data.AgentPayload) error {
- 	// insert payload (we don't have to care about concurrency
- 	// here; that's taken care of by a mutex in petrel.go)
+func dbUpdate(nodedata []byte) error {
+	// vivify the update data
+	var upd = data.AgentPayload{}
+	err := json.Unmarshal(nodedata, &upd)
+	if err != nil {
+		log.Printf("agentUpdate: json unmarshal err: %s", err)
+		return err
+	}
+
+	mux.Lock()
+	// update nodeStatus. the first timestamp is now (check-in
+	// rec'd time)
+	checkin := time.Now().Unix()
+	nodeStatus[upd.Host][0] = checkin
+	// second timestamp is the hosts's last reporting time, which
+	// can be in the past due to event playback). only update if
+	// the event timestamp is newer than what we have
+	if upd.TS > nodeStatus[upd.Host][1] {
+		nodeStatus[upd.Host][1] = upd.TS
+	}
+
+ 	// insert payload
  	stmt, err := db.Prepare("INSERT INTO current VALUES (?, ?, ?)")
 	if err != nil {
 		return err
 	}
-	data, _ := json.Marshal(upd)
-	_, err = stmt.Exec(upd.TS, upd.Host, string(data))
+	_, err = stmt.Exec(upd.TS, upd.Host, string(nodedata))
+	mux.Unlock()
+
  	return err
 }
 
