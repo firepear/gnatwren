@@ -8,6 +8,15 @@
       three in the same format for GPU temps
 
 
+0.15.0 - 2022-04-29
+--------------------------------------------------------------------
+
+  [web]
+
+    * Alerts are now set for nodes which have been seen, but have
+      fallen out of the current system data
+
+
 0.14.0 - 2022-04-28
 --------------------------------------------------------------------
 

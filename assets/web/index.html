@@ -229,6 +229,23 @@
         }
         // sort the nodes list
         nodes.sort();
+        // scan for nodes that have fallen out of the current table
+        for (let [host, lsts] of Object.entries(last_seen)) {
+            if (nodes.includes(host)) {
+                continue;
+            }
+            var tr = document.createElement("tr");
+            var td = document.createElement("td");
+            var ts = Date.now() / 1000; // div by 1k to get unix time
+            var lsdate = new Date(lsts["TS"] * 1000); // mult by 1k to get js time
+            var tdTxt = document.createTextNode(`${host} missing; last seen ${Math.floor(ts - lsts["TS"])}s ago (${lsdate.toString()})`);
+            td.colSpan = 12;
+            td.className = 'warn';
+            td.appendChild(tdTxt);
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+        }
+
         // and now that System Data table is populated, we can draw graphs
         getCPUTemps();
     }
