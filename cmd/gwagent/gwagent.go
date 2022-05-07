@@ -31,6 +31,8 @@ var (
 	stow = fmt.Sprintf("%s/agent_metrics.log", stowdir)
 	// the machine architecture
 	arch = ""
+	// cpu model name
+	cpuname = ""
 	// hostname
 	hostname = ""
 	// GPU manufacturer, and for non-Nvidia GPUs, the model name
@@ -48,12 +50,13 @@ func gatherMetrics() ([]byte, error) {
 	metrics.Arch = arch
 	metrics.Host = hostname
 	metrics.TS = time.Now().Unix()
-	metrics.Cpu = hwmon.Cpuinfo()
+	metrics.Cpu = hwmon.Cpuinfo(cpuname)
 	metrics.Gpu = hwmon.Gpuinfo(gpumanu, gpuname, gpuloc)
 	metrics.Mem = hwmon.Meminfo()
 	metrics.Ldavg = hwmon.Loadinfo()
 	metrics.Upt = hwmon.Uptime()
 
+	cpuname = metrics.Cpu.Name
 	return json.Marshal(metrics)
 }
 

@@ -7,12 +7,18 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/firepear/gnatwren/internal/data"
 )
 
+var (
+	cputrimR = regexp.MustCompile(`\(R\)`)
+	cputrimTM = regexp.MustCompile(`\(TM\)`)
+	cputrimGHz = regexp.MustCompile(`CPU.+$`)
+)
 
 func Arch() string {
 	arch, err := exec.Command("/bin/env", "uname", "-m").Output()
@@ -24,9 +30,8 @@ func Arch() string {
 
 // Cpuinfo scans /proc/cpuinfo and extracts values for the
 // cpu name, Tdie temp, and the current speed of every core
-func Cpuinfo() data.CPUdata {
+func Cpuinfo(procname string) data.CPUdata {
 	procs := map[string]string{}
-	procname := ""
 	procnum := ""
 
 	file, err := os.Open("/proc/cpuinfo")
@@ -44,8 +49,12 @@ func Cpuinfo() data.CPUdata {
 
 		if line[0] == "processor" {
 			procnum = line[2]
-		} else if line[0] == "model" && line[1] == "name" {
-			procname = strings.Join(line[3:], " ")
+		} else if line[0] == "model" && line[1] == "name" && procname == "" {
+			tprocname := []byte(strings.Join(line[3:], " "))
+			tprocname = cputrimR.ReplaceAll(tprocname, []byte(""))
+			tprocname = cputrimTM.ReplaceAll(tprocname, []byte(""))
+			tprocname = cputrimGHz.ReplaceAll(tprocname, []byte(""))
+			procname = string(tprocname)
 		} else if line[1] == "MHz" {
 			procs[procnum] = line[3]
 		}
