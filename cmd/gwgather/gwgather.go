@@ -13,10 +13,9 @@ import (
 	"time"
 
 	"github.com/firepear/gnatwren/internal/data"
-	_ "github.com/mattn/go-sqlite3"
 	ps "github.com/firepear/petrel/server"
+	_ "github.com/mattn/go-sqlite3"
 )
-
 
 var (
 	// gwgather config
@@ -24,7 +23,7 @@ var (
 	// nodeStatus holds the last check-in time of nodes running
 	// agents. mux is its lock
 	nodeStatus = map[string]*[2]int64{}
-	mux sync.RWMutex
+	mux        sync.RWMutex
 	// db handle
 	db *sql.DB
 	// terminates event loop when false
@@ -48,7 +47,7 @@ func main() {
 
 	// open logfile
 	_ = os.Rename(config.Log.File, fmt.Sprintf("%s.old", config.Log.File))
-	logf, err := os.OpenFile(config.Log.File, os.O_RDWR | os.O_CREATE, 0644)
+	logf, err := os.OpenFile(config.Log.File, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatalf("error opening logfile %s: %v", config.Log.File, err)
 	}
@@ -57,22 +56,22 @@ func main() {
 
 	// configure the petrel server
 	pc := &ps.Config{
-                Sockname: config.BindAddr,
-                Msglvl: config.Log.Level,
-		Timeout: 5,
-        }
+		Sockname: config.BindAddr,
+		Msglvl:   config.Log.Level,
+		Timeout:  5,
+	}
 	// and instantiate it
 	petrel, err := ps.TCPServer(pc)
-        if err != nil {
-                log.Printf("could not instantiate Server: %s\n", err)
-                os.Exit(1)
-        }
+	if err != nil {
+		log.Printf("could not instantiate Server: %s\n", err)
+		os.Exit(1)
+	}
 	// then register handler function(s)
 	err = petrel.Register("agentupdate", "blob", agentUpdate)
-        if err != nil {
-                log.Printf("failed to register responder 'agentupdate': %s\n", err)
-                os.Exit(1)
-        }
+	if err != nil {
+		log.Printf("failed to register responder 'agentupdate': %s\n", err)
+		os.Exit(1)
+	}
 
 	// initialize database
 	db, err = dbSetup(config.DB.Loc)
@@ -92,13 +91,12 @@ func main() {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-
 	log.Println("gwagent server up and listening")
 
-        for keepalive {
-                select {
-                case msg := <-petrel.Msgr:
-                        // handle messages from petrel
+	for keepalive {
+		select {
+		case msg := <-petrel.Msgr:
+			// handle messages from petrel
 			switch msg.Code {
 			case 199: // petrel quit
 				log.Printf("petrel server has shut down. last msg received was: %s\n", msg)
@@ -115,11 +113,11 @@ func main() {
 		case <-prunetick.C:
 			dbPruneMigrate()
 		case <-sigchan:
-                        // OS signal. tell petrel to shut down, then quit
-                        log.Println("OS signal received; shutting down")
-                        petrel.Quit()
+			// OS signal. tell petrel to shut down, then quit
+			log.Println("OS signal received; shutting down")
+			petrel.Quit()
 			keepalive = false
 			break
-                }
-        }
+		}
+	}
 }

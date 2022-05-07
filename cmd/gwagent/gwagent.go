@@ -15,20 +15,19 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/firepear/gnatwren/internal/hwmon"
 	"github.com/firepear/gnatwren/internal/data"
+	"github.com/firepear/gnatwren/internal/hwmon"
 	pc "github.com/firepear/petrel/client"
 )
 
-
 var (
 	req = []byte("agentupdate ")
-	nl = []byte("\n")
+	nl  = []byte("\n")
 	mux = &sync.RWMutex{}
 	// the directory and filename where we stow metrics that we
 	// can't immediately report to gwgather
 	stowdir = "/var/run/gnatwren"
-	stow = fmt.Sprintf("%s/agent_metrics.log", stowdir)
+	stow    = fmt.Sprintf("%s/agent_metrics.log", stowdir)
 	// the machine architecture
 	arch = ""
 	// cpu model name
@@ -39,10 +38,8 @@ var (
 	// and sysfs directory location
 	gpumanu = ""
 	gpuname = ""
-	gpuloc = ""
+	gpuloc  = ""
 )
-
-
 
 func gatherMetrics() ([]byte, error) {
 	metrics := data.AgentPayload{}
@@ -59,7 +56,6 @@ func gatherMetrics() ([]byte, error) {
 	cpuname = metrics.Cpu.Name
 	return json.Marshal(metrics)
 }
-
 
 func sendMetrics(pconf *pc.Config) {
 	// get metrics for this run
@@ -93,7 +89,6 @@ func sendMetrics(pconf *pc.Config) {
 	}
 }
 
-
 func stowMetrics(m []byte) error {
 	// create stowdir if it doesn't exist
 	if _, err := os.Stat(stowdir); errors.Is(err, os.ErrNotExist) {
@@ -118,7 +113,6 @@ func stowMetrics(m []byte) error {
 	}
 	return err
 }
-
 
 func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 	// if the stow file doesn't exist, there's nothing to do
@@ -158,7 +152,7 @@ func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 		m := scanner.Bytes()
 		// TODO handle the actual response, to know how not to count dupes
 		_, err = pet.Dispatch(append(req, m...))
-		if err != nil && ! errors.Is(err, io.EOF) {
+		if err != nil && !errors.Is(err, io.EOF) {
 			log.Printf("sent %d metrics then hit a problem: %s\n", sent, err)
 			petok = false
 			break
@@ -175,7 +169,6 @@ func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 	}
 	c <- nil
 }
-
 
 func main() {
 	// find out where the gwagent config file is and read it in
@@ -196,14 +189,12 @@ func main() {
 	intlen := len(config.Intervals)
 	// and the request we'll be making
 
-
-        // set up client configuration and create client instance
-        pconf := &pc.Config{Addr: config.GatherAddr}
+	// set up client configuration and create client instance
+	pconf := &pc.Config{Addr: config.GatherAddr}
 
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
-
 
 	// get machine architecture, hostname, and gpu maker (plus
 	// other details, sometimes). these things are either
@@ -233,11 +224,11 @@ func main() {
 
 	// client event loop
 	keepalive := true
-        for keepalive {
-                select {
-                case <-metrictick.C:
-                        // gather metrics, try to ship them, and set a
-                        // new timer for this case
+	for keepalive {
+		select {
+		case <-metrictick.C:
+			// gather metrics, try to ship them, and set a
+			// new timer for this case
 			sendMetrics(pconf)
 			metrictick = time.NewTimer(time.Duration(config.Intervals[rand.Intn(intlen)]) * time.Second)
 		case <-stowtick.C:
@@ -249,13 +240,13 @@ func main() {
 			if err != nil {
 				log.Printf("%s\n", err)
 			}
-                case <-sigchan:
-                        // we've trapped a signal from the OS. set
-                        // keepalive to false and break out of our
-                        // select (AKA terminate)
-                        log.Println("OS signal received; shutting down")
-                        keepalive = false
+		case <-sigchan:
+			// we've trapped a signal from the OS. set
+			// keepalive to false and break out of our
+			// select (AKA terminate)
+			log.Println("OS signal received; shutting down")
+			keepalive = false
 			break
-                }
-        }
+		}
+	}
 }

@@ -33,7 +33,6 @@ func GpuManu() string {
 	return "intel"
 }
 
-
 // GpuName uses the pci.ids file to find the product name of a
 // GPU. This is not needed for Nvidia GPUs.
 func GpuName(manu string) string {
@@ -100,7 +99,6 @@ func GpuName(manu string) string {
 	return "NONE"
 }
 
-
 // GpuSysfsLoc looks through the /sys directory tree to find the hwmon
 // directory corresponding to the first GPU in a system. This is later
 // used by `Gpuinfo()`.
@@ -114,7 +112,6 @@ func GpuSysfsLoc() string {
 	}
 	return "NONE"
 }
-
 
 // Gpuinfo is a top-level function for gathering GPU data. It will
 // call an appropriate child function, based on GPU manufacturer, to
@@ -175,7 +172,6 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 	nvidiasmi.Wait()
 }
 
-
 // GpuinfoAMD gathers GPU status data for AMD GPUs.
 func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	//   power1_average, power1_cap_max
@@ -191,7 +187,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner.Scan()
 		num, _ := strconv.Atoi(scanner.Text())
 		// value is in millidegC
-		gpudata.TempCur = fmt.Sprintf("%dC", num / 1000)
+		gpudata.TempCur = fmt.Sprintf("%dC", num/1000)
 		file.Close()
 	}
 	file, err = os.Open(fmt.Sprintf("%s/temp1_crit", loc))
@@ -202,7 +198,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		num, _ := strconv.Atoi(scanner.Text())
-		gpudata.TempMax = fmt.Sprintf("%dC", num / 1000)
+		gpudata.TempMax = fmt.Sprintf("%dC", num/1000)
 		file.Close()
 	}
 
@@ -216,7 +212,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner.Scan()
 		num, _ := strconv.ParseFloat(scanner.Text(), 64)
 		// value is in microW
-		gpudata.PowCur = fmt.Sprintf("%.2fW", num / 1000000.0)
+		gpudata.PowCur = fmt.Sprintf("%.2fW", num/1000000.0)
 		file.Close()
 	}
 	file, err = os.Open(fmt.Sprintf("%s/power1_cap_max", loc))
@@ -227,7 +223,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		num, _ := strconv.ParseFloat(scanner.Text(), 64)
-		gpudata.PowMax = fmt.Sprintf("%.2fW", num / 1000000.0)
+		gpudata.PowMax = fmt.Sprintf("%.2fW", num/1000000.0)
 		file.Close()
 	}
 
@@ -256,7 +252,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	}
 	// calculate % if we can, to match nvidia
 	if fancur > -1 && fanmax > -1 {
-		gpudata.Fan = fmt.Sprintf("%d%%", fancur * 100 / fanmax)
+		gpudata.Fan = fmt.Sprintf("%d%%", fancur*100/fanmax)
 	} else if fancur > -1 {
 		gpudata.Fan = fmt.Sprintf("%dRPM", fancur)
 	} else {

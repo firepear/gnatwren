@@ -13,12 +13,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-
 var (
 	// gwgather config
 	config data.GatherConfig
 	// db handle
-	db *sql.DB
+	db  *sql.DB
 	mux sync.RWMutex
 )
 

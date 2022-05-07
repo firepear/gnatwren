@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	cputrimR = regexp.MustCompile(`\(R\)`)
-	cputrimTM = regexp.MustCompile(`\(TM\)`)
+	cputrimR   = regexp.MustCompile(`\(R\)`)
+	cputrimTM  = regexp.MustCompile(`\(TM\)`)
 	cputrimGHz = regexp.MustCompile(`CPU.+$`)
 )
 
@@ -65,9 +65,9 @@ func Cpuinfo(procname string) data.CPUdata {
 
 	temp := Tempinfo()
 	return data.CPUdata{
-		Name: procname,
-		Temp: (float64(temp) / 1000),
-		Cores: procs }
+		Name:  procname,
+		Temp:  (float64(temp) / 1000),
+		Cores: procs}
 }
 
 // CpuinfoSysfs is the fallback function for gathering core speeds. It
@@ -139,7 +139,6 @@ func Meminfo() [3]int {
 	return memdata
 }
 
-
 // Tempinfo scans the /sys/class/hwmon tree, looking for a hwmonX
 // subtree with a name of 'k10temp' (AMD) or 'cpu_thermal' (Raspberry
 // Pi). It then examines the temp* files until it finds the one
@@ -194,7 +193,7 @@ func Tempinfo() int {
 				// we're only interested in the Tctl
 				// reading for k10 or Package temp for
 				// Intel
-				if ! (labelstr == "Tctl\n" || labelstr == "Package id 0\n") {
+				if !(labelstr == "Tctl\n" || labelstr == "Package id 0\n") {
 					continue
 				}
 				// when we find it, edit our path to point at
@@ -229,7 +228,6 @@ func Tempinfo() int {
 	}
 	return cputemp
 }
-
 
 // Uptime reports the uptime count from /proc/uptime
 func Uptime() string {

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log"
 	"database/sql"
 	"encoding/json"
+	"log"
 
 	"github.com/firepear/gnatwren/internal/data"
 	_ "github.com/mattn/go-sqlite3"
@@ -16,8 +16,8 @@ func dbSetup(dbloc string) (*sql.DB, error) {
 }
 
 func dbGetOverview() (*map[string]data.AgentPayload, error) {
- 	// make a map to hold the metrics
- 	metrics := map[string]data.AgentPayload{}
+	// make a map to hold the metrics
+	metrics := map[string]data.AgentPayload{}
 	// and vars to hold each datum from the query
 	var ts int64
 	var host, mstr string
@@ -41,10 +41,10 @@ func dbGetOverview() (*map[string]data.AgentPayload, error) {
 }
 
 func dbGetCPUStats(duration string) (*map[int64]map[string]string, error) {
- 	// map of temps (by timestamp, by host), to be returned
- 	t := map[int64]map[string]string{}
+	// map of temps (by timestamp, by host), to be returned
+	t := map[int64]map[string]string{}
 	//
- 	var rows *sql.Rows
+	var rows *sql.Rows
 	var err error
 
 	switch duration {
@@ -78,4 +78,3 @@ func dbGetCPUStats(duration string) (*map[int64]map[string]string, error) {
 }
 
 // https://www.sqlite.org/sharedcache.html
-

@@ -70,8 +70,8 @@ func dbLoadNodeStatus() {
 
 func dbPruneMigrate() {
 	var c int64
- 	// timestamp, one hour ago
- 	tlimit := time.Now().Unix() - 3600
+	// timestamp, one hour ago
+	tlimit := time.Now().Unix() - 3600
 	// if nothing newer than tlimit exists in the current table,
 	// there haven't been DB updates in a while; do nothing
 	row := db.QueryRow("SELECT count(ts) FROM current WHERE ts >= ?", tlimit)
@@ -98,11 +98,11 @@ func dbPruneMigrate() {
 		// for each host, grab the newest row from common --
 		// since we test for the most recent row in hourly
 		// being at least 1h old -- and copy to hourly
-		for host, _ := range nodeStatus {
+		for host := range nodeStatus {
 			var (
-				q = "SELECT ts, data FROM current WHERE host = ? ORDER BY ts DESC LIMIT 1"
+				q  = "SELECT ts, data FROM current WHERE host = ? ORDER BY ts DESC LIMIT 1"
 				ts int64
-				d string
+				d  string
 			)
 			row = db.QueryRow(q, host, tlimit)
 			if err := row.Scan(&ts, &d); err != nil {
@@ -142,11 +142,11 @@ func dbPruneMigrate() {
 			break
 		}
 		// otherwise, copy most recent data for each host from hourly to daily
-		for host, _ := range nodeStatus {
+		for host := range nodeStatus {
 			var (
-				q = "SELECT ts, data FROM hourly WHERE host = ? ORDER BY ts DESC LIMIT 1"
+				q  = "SELECT ts, data FROM hourly WHERE host = ? ORDER BY ts DESC LIMIT 1"
 				ts int64
-				d string
+				d  string
 			)
 			row = db.QueryRow(q, host, tlimit)
 			if err := row.Scan(&ts, &d); err != nil {
@@ -179,7 +179,6 @@ func dbPruneMigrate() {
 	stmt.Exec(tlimit)
 }
 
-
 func dbUpdate(nodedata []byte) error {
 	// vivify the update data
 	var upd = data.AgentPayload{}
@@ -205,16 +204,15 @@ func dbUpdate(nodedata []byte) error {
 		nodeStatus[upd.Host][1] = upd.TS
 	}
 
- 	// insert payload
- 	stmt, err := db.Prepare("INSERT INTO current VALUES (?, ?, ?)")
+	// insert payload
+	stmt, err := db.Prepare("INSERT INTO current VALUES (?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	_, err = stmt.Exec(upd.TS, upd.Host, string(nodedata))
 	mux.Unlock()
 
- 	return err
+	return err
 }
 
 // https://www.sqlite.org/sharedcache.html
-

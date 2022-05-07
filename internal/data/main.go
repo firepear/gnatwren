@@ -7,13 +7,12 @@ type AgentConfig struct {
 	Intervals  []int  `json:"intervals"`
 }
 
-
 // gwgather configuration
 type GatherConfig struct {
-	BindAddr string            `json:"bind_addr"`
-	DB       GatherDBConfig    `json:"db"`
-	Files    GatherFileConfig  `json:"files"`
-	Log      GatherLogConfig   `json:"log"`
+	BindAddr string           `json:"bind_addr"`
+	DB       GatherDBConfig   `json:"db"`
+	Files    GatherFileConfig `json:"files"`
+	Log      GatherLogConfig  `json:"log"`
 }
 
 type GatherLogConfig struct {
@@ -32,33 +31,32 @@ type GatherFileConfig struct {
 	JsonInt int64  `json:"json_interval"`
 }
 
-
 // AgentStatus is a repackaged AgentPayload that adds the most recent
 // check-in time from gwgather
 type AgentStatus struct {
-	TS int64
+	TS      int64
 	Payload string
 }
 
 // AgentPayload represents one sample, as collected by gwagent.
 type AgentPayload struct {
-	Host string
-	Arch string
-	TS int64
-	Cpu CPUdata
-	Gpu GPUdata
-	Mem [3]int
+	Host  string
+	Arch  string
+	TS    int64
+	Cpu   CPUdata
+	Gpu   GPUdata
+	Mem   [3]int
 	Ldavg string
-	Upt string
+	Upt   string
 }
 
 // The CPUdata struct is used by internal/hwmon to report the data
 // collected on a machine's CPU. Name is the CPU name as reported by
 // the OS, and Cores is a map of core ids to speeds in MHz.
 type CPUdata struct {
-	Name   string
-	Cores  map[string]string
-	Temp   float64
+	Name  string
+	Cores map[string]string
+	Temp  float64
 }
 
 type GPUdata struct {
@@ -66,6 +64,6 @@ type GPUdata struct {
 	TempCur string
 	TempMax string
 	Fan     string
-        PowCur  string
+	PowCur  string
 	PowMax  string
 }
