@@ -58,7 +58,7 @@ func gatherMetrics() ([]byte, error) {
 }
 
 
-func sendMetrics(pconf *pc.ClientConfig) {
+func sendMetrics(pconf *pc.Config) {
 	// get metrics for this run
 	sample, err := gatherMetrics()
 	// try to instantiate a petrel client
@@ -117,7 +117,7 @@ func stowMetrics(m []byte) error {
 }
 
 
-func sendUndeliveredMetrics(pconf *pc.ClientConfig, c chan error) {
+func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 	// if the stow file doesn't exist, there's nothing to do
 	if _, err := os.Stat(stow); os.IsNotExist(err) {
 		c <- nil
@@ -195,7 +195,7 @@ func main() {
 
 
         // set up client configuration and create client instance
-        pconf := &pc.ClientConfig{Addr: config.GatherAddr}
+        pconf := &pc.Config{Addr: config.GatherAddr}
 
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)

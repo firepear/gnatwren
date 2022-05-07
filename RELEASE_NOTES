@@ -8,6 +8,26 @@
       three in the same format for GPU temps
 
 
+0.16.0 - 2022-05-07
+--------------------------------------------------------------------
+
+  [gwgather]
+
+    * nodeStatus now begins with all hosts from all db tables
+
+    * A crashing bug due to new nodes coming online was fixed
+
+    * The `alerts` section of the config file has been removed, along
+      with its struct. A new section, `log` has been added
+
+    * gwgather now logs to a file, and log level is settable via
+      config file
+
+  [gwagent]
+
+    * CPU temps are now pulled from Intel processors
+
+
 0.15.0 - 2022-04-29
 --------------------------------------------------------------------
 

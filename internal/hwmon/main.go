@@ -162,10 +162,11 @@ func Tempinfo() int {
 		// current hwmon dir and read its contents
 		path := fmt.Sprintf("/sys/class/hwmon/%s/name", hwmon)
 		name, err := os.ReadFile(path)
+		namestr := string(name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if string(name) == "k10temp\n" {
+		if namestr == "k10temp\n" || namestr == "coretemp\n" {
 			// we're only interested in "k10temp" on AMD
 			// CPUs. build a list of the available temp
 			// data source labels
@@ -181,8 +182,10 @@ func Tempinfo() int {
 					log.Fatal(err)
 				}
 				labelstr := string(label)
-				// we're only interested in the Tdie reading
-				if labelstr != "Tctl\n" {
+				// we're only interested in the Tctl
+				// reading for k10 or Package temp for
+				// Intel
+				if ! (labelstr == "Tctl\n" || labelstr == "Package id 0\n") {
 					continue
 				}
 				// when we find it, edit our path to point at
