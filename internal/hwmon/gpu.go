@@ -47,6 +47,9 @@ func GpuName(manu string) string {
 	if manu == "amd" {
 		rmanu, _ = regexp.Compile("^1002")
 	}
+	if manu == "intel" {
+		rmanu, _ = regexp.Compile("^8086")
+	}
 
 	// the other thing we need before starting is to look up our
 	// model id and construct a regexp from it
@@ -106,7 +109,10 @@ func GpuSysfsLoc() string {
 	if err != nil {
 		return "NONE"
 	}
-	return gpus[0]
+	if len(gpus) > 0 {
+		return gpus[0]
+	}
+	return "NONE"
 }
 
 
@@ -115,15 +121,17 @@ func GpuSysfsLoc() string {
 // do the actual data gathering.
 func Gpuinfo(manu, name, loc string) data.GPUdata {
 	var gpudata data.GPUdata
-	if loc == "NONE" {
-		return gpudata
-	}
 
 	if manu == "nvidia" {
 		GpuinfoNvidia(&gpudata)
-	} else if manu == "amd" {
+	} else {
 		gpudata.Name = name
-		GpuinfoAMD(&gpudata, loc)
+		if loc == "NONE" {
+			return gpudata
+		}
+		if manu == "amd" {
+			GpuinfoAMD(&gpudata, loc)
+		}
 	}
 	return gpudata
 }

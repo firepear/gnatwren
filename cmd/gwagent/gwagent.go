@@ -211,8 +211,8 @@ func main() {
 	arch = hwmon.Arch()
 	hostname, _ = os.Hostname()
 	gpumanu = hwmon.GpuManu()
-	if gpumanu == "amd" {
-		gpuname = hwmon.GpuName("amd")
+	if gpumanu != "nvidia" {
+		gpuname = hwmon.GpuName(gpumanu)
 		gpuloc = hwmon.GpuSysfsLoc()
 	}
 
