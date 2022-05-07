@@ -8,6 +8,20 @@
       three in the same format for GPU temps
 
 
+0.17.0 - 2022-05-08
+--------------------------------------------------------------------
+
+  [gwagent]
+
+    * Improved Intel CPU name handling
+
+    * Initial pass at info gathering for Intel iGPUs
+
+  [web]
+
+    * Placeholders for null values from GPUs
+
+
 0.16.0 - 2022-05-07
 --------------------------------------------------------------------
 

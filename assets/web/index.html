@@ -191,6 +191,7 @@
             var memunTxt = document.createTextNode(`${memtot.toFixed(2)}GB : ${memun.toFixed(2)}% : ${memav.toFixed(2)}%`);
             tdMemun.appendChild(memunTxt);
             tdMemun.style.textAlign = 'right';
+
             // gpu desc
             var tdGdesc = document.createElement("td");
             var gdescTxt = document.createTextNode(`${metric['Gpu']['Name']}`);
@@ -198,16 +199,25 @@
             // GPU temp
             var tdGtemp = document.createElement("td");
             var gtempTxt = document.createTextNode(`${metric['Gpu']['TempCur']} / ${metric['Gpu']['TempMax']}`);
+            if (metric['Gpu']['TempCur'] == "" && metric['Gpu']['TempMax'] == "") {
+                gtempTxt = document.createTextNode("---")
+            }
             tdGtemp.appendChild(gtempTxt);
             tdGtemp.style.textAlign = 'right';
             // GPU fan speed
             var tdGfan = document.createElement("td");
             var gfanTxt = document.createTextNode(`${metric['Gpu']['Fan']}`);
+            if (metric['Gpu']['Fan'] == "") {
+                gfanTxt = document.createTextNode("---")
+            }
             tdGfan.appendChild(gfanTxt);
             tdGfan.style.textAlign = 'right';
             // GPU power use
             var tdGpow = document.createElement("td");
             var gpowTxt = document.createTextNode(`${metric['Gpu']['PowCur']} / ${metric['Gpu']['PowMax']}`);
+            if (metric['Gpu']['PowCur'] == "" && metric['Gpu']['PowMax'] == "") {
+                gpowTxt = document.createTextNode("---")
+            }
             tdGpow.appendChild(gpowTxt);
             tdGpow.style.textAlign = 'right';
 
