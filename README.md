@@ -56,12 +56,12 @@ yet.
 To build and launch a Docker container which runs `gwgather` and an
 instance of `nginx` for web monitoring, run `./build.sh`
 
+Re-run the build script anytime. No monitoring data will be lost.
+
 The container has `busybox` and `sqlite` installed for diagnostics. If
 needed, attach with
 
 `docker exec -it gwgather ash`
-
-Re-run the build script anytime. No monitoring data will be lost.
 
 ### gwagent via Ansible
 
@@ -99,11 +99,6 @@ adaptable to any situation without much effort.
 - `bind_addr`: The interface and port to bind to.Changing to
   interfaces other than `0.0.0.0` may cause failures on startup within
   Docker
-- alerts
-  - `late_checkin`: Seconds until a client node is considered late and
-    an alert is triggered
-  - `over_temp`: CPU temperature in degC which triggers an
-    alert
 - db
   - `location`: Path to the Gnatwren stats DB
   - `hours_retained`: How many hours of data to retain on an hourly
@@ -111,10 +106,12 @@ adaptable to any situation without much effort.
   - `days_retained`: How many days of data to retain on a daily
     (i.e. one sample per day per node) basis
 - files
-  - `enabled`: No current function
   - `json_location`: Path to directory where JSON stats for the web
     status page should be dumped
   - `json_interval`: Frequency, in seconds, of JSON dumps
+- log
+  - `file`: The file to write output to
+  - `level`: Logging level ("fatal", "error", "conn", "debug")
 
 ### gwagent
 
@@ -122,5 +119,5 @@ adaptable to any situation without much effort.
 - `active`: No current function
 - `intervals`: The set of intervals, in seconds, which will be
   selected from after each report is made. The default set is the
-  primes around 30 and 45, resulting in (on average) 1.69 updates per
+  primes between 30 and 50, resulting in (on average) 1.51 updates per
   minute, while minimizing simultaneous updates
