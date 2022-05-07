@@ -11,15 +11,14 @@ type AgentConfig struct {
 // gwgather configuration
 type GatherConfig struct {
 	BindAddr string            `json:"bind_addr"`
-	Alerts   GatherAlertConfig `json:"alerts"`
 	DB       GatherDBConfig    `json:"db"`
 	Files    GatherFileConfig  `json:"files"`
+	Log      GatherLogConfig   `json:"log"`
 }
 
-type GatherAlertConfig struct {
-	LateCheck int64 `json:"late_checkin"`
-	TempWarn  int64 `json:"temp_warn"`
-	TempCrit  int64 `json:"temp_crit"`
+type GatherLogConfig struct {
+	File  string `json:"file"`
+	Level string `json:"level"`
 }
 
 type GatherDBConfig struct {

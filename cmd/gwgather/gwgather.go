@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -45,10 +46,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// open logfile
+	_ = os.Rename(config.Log.File, fmt.Sprintf("%s.old", config.Log.File))
+	logf, err := os.OpenFile(config.Log.File, os.O_RDWR | os.O_CREATE, 0644)
+	if err != nil {
+		log.Fatalf("error opening logfile %s: %v", config.Log.File, err)
+	}
+	defer logf.Close()
+	log.SetOutput(logf)
+
 	// configure the petrel server
-	pc := &ps.ServerConfig{
+	pc := &ps.Config{
                 Sockname: config.BindAddr,
-                Msglvl: ps.Error,
+                Msglvl: config.Log.Level,
 		Timeout: 5,
         }
 	// and instantiate it
