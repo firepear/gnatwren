@@ -38,7 +38,13 @@ func dbLoadNodeStatus() {
 	//
 	// first get a list of hostnames
 	hosts := []string{}
-	rows, err := db.Query("SELECT DISTINCT host FROM current ORDER BY host")
+	rows, err := db.Query(`SELECT DISTINCT host FROM
+                                   (SELECT DISTINCT host FROM current
+                                    UNION ALL
+                                    SELECT DISTINCT host FROM hourly
+                                    UNION ALL
+                                    SELECT DISTINCT host FROM daily)
+                               ORDER BY host`)
 	if err != nil {
 		return
 	}
@@ -187,7 +193,11 @@ func dbUpdate(nodedata []byte) error {
 	// update nodeStatus. the first timestamp is now (check-in
 	// rec'd time)
 	checkin := time.Now().Unix()
-	nodeStatus[upd.Host][0] = checkin
+	if _, ok := nodeStatus[upd.Host]; ok {
+		nodeStatus[upd.Host][0] = checkin
+	} else {
+		nodeStatus[upd.Host] = &[2]int64{checkin, checkin}
+	}
 	// second timestamp is the hosts's last reporting time, which
 	// can be in the past due to event playback). only update if
 	// the event timestamp is newer than what we have
