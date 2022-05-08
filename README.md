@@ -14,20 +14,21 @@ for use or deployment**
 Reporting of the following data is implemented:
 
 - CPU name and average frequencies
-- CPU temperature (AMD K10 and Pi only)
+- CPU temperature (AMD K10, Intel, and Pi)
 - Uptime
 - Loadavg
 - Total, free, and available memory
-- GPU name, temperature, fan speed, and power stats (Nvidia and AMD)
+- GPU name, temperature, fan speed, and power stats (Nvidia and AMD; name for Intel)
 - Time since last check-in
 
 The following events are shown on the web status page:
 
 - CPU temperature
-  - Warning status if over 80C
-  - Critical status if over 90C
+  - Warning status if CPU over 80C
+  - Critical status if CPU over 90C
 - Last check-in
   - Critical status if more than 210s overdue
+  - Warning if a node ceases to be present in current data
 
 ## Visualization
 
