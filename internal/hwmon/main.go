@@ -15,9 +15,10 @@ import (
 )
 
 var (
-	cputrimR   = regexp.MustCompile(`\(R\)`)
-	cputrimTM  = regexp.MustCompile(`\(TM\)`)
-	cputrimGHz = regexp.MustCompile(`CPU.+$`)
+	cputrimR    = regexp.MustCompile(`\(R\)`)
+	cputrimTM   = regexp.MustCompile(`\(TM\)`)
+	cputrimGHz  = regexp.MustCompile(`CPU.+$`)
+	cputrimProc = regexp.MustCompile(`\d+\-Core Processor$`)
 )
 
 func Arch() string {
@@ -54,6 +55,7 @@ func Cpuinfo(procname string) data.CPUdata {
 			tprocname = cputrimR.ReplaceAll(tprocname, []byte(""))
 			tprocname = cputrimTM.ReplaceAll(tprocname, []byte(""))
 			tprocname = cputrimGHz.ReplaceAll(tprocname, []byte(""))
+			tprocname = cputrimProc.ReplaceAll(tprocname, []byte(""))
 			procname = string(tprocname)
 		} else if line[1] == "MHz" {
 			procs[procnum] = line[3]
