@@ -19,6 +19,10 @@
 
   [web]
 
+    * Further shortening of CPU descs
+
+    * Re-added CPU thread count
+
     * Placeholders for null values from GPUs
 
   [all]
