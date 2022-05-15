@@ -8,6 +8,16 @@
       three in the same format for GPU temps
 
 
+0.17.1 - 2022-05-12
+--------------------------------------------------------------------
+
+  [web]
+
+    * Fixes bad dates in missing host notification
+
+    * Give page a title, finally
+
+
 0.17.0 - 2022-05-08
 --------------------------------------------------------------------
 
