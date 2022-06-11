@@ -5,6 +5,7 @@ type AgentConfig struct {
 	GatherAddr string `json:"gather_addr"`
 	Active     bool   `json:"active"`
 	Intervals  []int  `json:"intervals"`
+	Stowdir    string `json:"workdir"`
 }
 
 // gwgather configuration

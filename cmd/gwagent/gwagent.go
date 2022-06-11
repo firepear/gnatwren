@@ -26,7 +26,7 @@ var (
 	mux = &sync.RWMutex{}
 	// the directory and filename where we stow metrics that we
 	// can't immediately report to gwgather
-	stowdir = "/var/run/gnatwren"
+	stowdir = "/var/lib/gnatwren"
 	stow    = fmt.Sprintf("%s/agent_metrics.log", stowdir)
 	// the machine architecture
 	arch = ""
@@ -187,7 +187,9 @@ func main() {
 	// set up the things we need to pick our reporting intervals
 	rand.Seed(time.Now().UnixNano())
 	intlen := len(config.Intervals)
-	// and the request we'll be making
+	// re-set stow vars
+	stowdir = config.Stowdir
+	stow    = fmt.Sprintf("%s/agent_metrics.log", stowdir)
 
 	// set up client configuration and create client instance
 	pconf := &pc.Config{Addr: config.GatherAddr}
