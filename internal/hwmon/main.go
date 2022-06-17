@@ -29,6 +29,14 @@ func Arch() string {
 	return strings.TrimSpace(string(arch))
 }
 
+func OS() string {
+	os, err := exec.Command("/bin/env", "uname").Output()
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	return strings.TrimSpace(string(os))
+}
+
 // Cpuinfo scans /proc/cpuinfo and extracts values for the
 // cpu name, Tdie temp, and the current speed of every core
 func Cpuinfo(procname string) data.CPUdata {

@@ -28,8 +28,9 @@ var (
 	// can't immediately report to gwgather
 	stowdir = "/var/lib/gnatwren"
 	stow    = fmt.Sprintf("%s/agent_metrics.log", stowdir)
-	// the machine architecture
-	arch = ""
+	// the machine architecture and OS
+	arch   = ""
+	machos = ""
 	// cpu model name
 	cpuname = ""
 	// hostname
@@ -198,10 +199,11 @@ func main() {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	// get machine architecture, hostname, and gpu maker (plus
+	// get machine architecture, OS, hostname, and gpu maker (plus
 	// other details, sometimes). these things are either
 	// irritating or expensive to fetch, so we do it here, once
 	arch = hwmon.Arch()
+	machos = hwmon.OS()
 	hostname, _ = os.Hostname()
 	gpumanu = hwmon.GpuManu()
 	if gpumanu != "nvidia" {
