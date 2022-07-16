@@ -1,10 +1,9 @@
-## 0.xx.0 - 2022-05-xx
+## 0.17.3 (2022-07-16)
 
-### gwdump
+### web
 
-- There are now 7 JSON files produced: the current machine stats file,
-  three files for CPU temps (past-hour, hourly, daily), and three in
-  the same format for GPU temps
+- Removed `localhost` and port number from URL construction inside
+  script; everything is now purely relative to the httpd root
 
 
 
