@@ -1,14 +1,25 @@
-## 0.18.0 (2022-12-03
+## PENDING 0.19.0 (2022-12-03)
 
 ### gwgather
 
-- db table `daily` was accumulating values every 48h rather than
-  every 24. This has been fixed
+- Machine data now exported to current, hourly, and daily files
 
 ### web
 
 - Hourly and daily CPU graph now available
 - Host missing calculation fixed
+
+
+
+## 0.18.0 (2022-12-03)
+
+### gwgather
+
+- DB table `daily` was accumulating values every 48h rather than
+  every 24. This has been fixed
+- DB retention now honors config settings
+
+
 
 ## 0.17.3 (2022-07-16)
 
