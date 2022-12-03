@@ -161,14 +161,14 @@ func dbPruneMigrate() {
 	}
 	// prune hourly
 	// set tlimit according to config retention
-	tlimit = config.db.hours_retained * 3600
+	tlimit = config.DB.Hrs * 3600
 	stmt, err = db.Prepare("DELETE FROM hourly WHERE ts < ?")
 	if err != nil {
 		log.Printf("db: can't prune hourly table: %s\n", err)
 	}
 	stmt.Exec(tlimit)
 	// and daily
-	tlimit = config.db.days_retained * 86400
+	tlimit = config.DB.Days * 86400
 	stmt, err = db.Prepare("DELETE FROM daily WHERE ts < ?")
 	if err != nil {
 		log.Printf("db: can't prune daily table: %s\n", err)
