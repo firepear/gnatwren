@@ -77,4 +77,41 @@ func dbGetCPUStats(duration string) (*map[int64]map[string]string, error) {
 	return &t, nil
 }
 
+func dbGetGPUStats(duration string) (*map[int64]map[string]string, error) {
+	// map of temps (by timestamp, by host), to be returned
+	t := map[int64]map[string]string{}
+	//
+	var rows *sql.Rows
+	var err error
+
+	switch duration {
+	case "current":
+		rows, err = db.Query("SELECT ts, host, json_extract(data, '$.Gpu.Temp') FROM current ORDER BY ts")
+	case "hourly":
+		rows, err = db.Query("SELECT ts, host, json_extract(data, '$.Gpu.Temp') FROM hourly ORDER BY ts")
+	case "daily":
+		rows, err = db.Query("SELECT ts, host, json_extract(data, '$.Gpu.Temp') FROM daily ORDER BY ts")
+	}
+	if err != nil {
+		log.Printf("gpustats %s query failed: %s\n", duration, err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ts int64
+		var host string
+		var temp string
+		if err = rows.Scan(&ts, &host, &temp); err != nil {
+			return nil, err
+		}
+
+		if t[ts] == nil {
+			t[ts] = map[string]string{}
+		}
+		t[ts][host] = temp
+
+	}
+	return &t, nil
+}
+
 // https://www.sqlite.org/sharedcache.html

@@ -39,7 +39,6 @@ func exportOverview() error {
 
 func exportCpuTemps(duration string) error {
 	cpuTemps, err := dbGetCPUStats(duration)
-	//log.Printf("cputemps: %v\n", cpuTemps)
 	if err != nil {
 		return err
 	}
@@ -48,6 +47,19 @@ func exportCpuTemps(duration string) error {
 	filename = fmt.Sprintf("%s/cputemps-%s.json", config.Files.JsonLoc, duration)
 	cpuTempsj, _ := json.Marshal(*cpuTemps)
 	err = os.WriteFile(filename, cpuTempsj, 0644)
+	return err
+}
+
+func exportGpuTemps(duration string) error {
+	gpuTemps, err := dbGetGPUStats(duration)
+	if err != nil {
+		return err
+	}
+
+	var filename string
+	filename = fmt.Sprintf("%s/gputemps-%s.json", config.Files.JsonLoc, duration)
+	gpuTempsj, _ := json.Marshal(*gpuTemps)
+	err = os.WriteFile(filename, gpuTempsj, 0644)
 	return err
 }
 
@@ -83,6 +95,12 @@ func main() {
 		err = exportCpuTemps(period)
 		if err != nil {
 			log.Printf("couldn't export %s cpu temps to json: %s\n",
+				period, err)
+		}
+		time.Sleep(1)
+		err = exportGpuTemps(period)
+		if err != nil {
+			log.Printf("couldn't export %s gpu temps to json: %s\n",
 				period, err)
 		}
 		time.Sleep(1)
