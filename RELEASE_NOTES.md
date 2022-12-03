@@ -2,7 +2,7 @@
 
 ### gwgather
 
-- Machine data now exported to current, hourly, and daily files
+- CPU and GPU data now exported to current, hourly, and daily files
 
 ### web
 
