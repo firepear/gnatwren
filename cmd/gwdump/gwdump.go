@@ -4,21 +4,23 @@ import (
 	"database/sql"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
-	"strings"
-	"sync"
+	"time"
 
 	"github.com/firepear/gnatwren/internal/data"
 	_ "github.com/mattn/go-sqlite3"
 )
 
+
 var (
 	// gwgather config
 	config data.GatherConfig
+	// export periods
+	periods = [3]string{"current", "hourly", "daily"}
 	// db handle
 	db  *sql.DB
-	mux sync.RWMutex
 )
 
 func exportOverview() error {
@@ -26,13 +28,12 @@ func exportOverview() error {
 	if err != nil {
 		return err
 	}
-	var filename strings.Builder
+	var filename string
 	var data []byte
 
-	filename.WriteString(config.Files.JsonLoc)
-	filename.WriteString("/overview.json")
+	filename = fmt.Sprintf("%s/overview.json", config.Files.JsonLoc)
 	data, _ = json.Marshal(*machStatus)
-	err = os.WriteFile(filename.String(), data, 0644)
+	err = os.WriteFile(filename, data, 0644)
 	return err
 }
 
@@ -43,13 +44,10 @@ func exportCpuTemps(duration string) error {
 		return err
 	}
 
-	var filename strings.Builder
-	filename.WriteString(config.Files.JsonLoc)
-	filename.WriteString("/cputemps-")
-	filename.WriteString(duration)
-	filename.WriteString(".json")
+	var filename string
+	filename = fmt.Sprintf("%s/cputemps-%s.json", config.Files.JsonLoc, duration)
 	cpuTempsj, _ := json.Marshal(*cpuTemps)
-	err = os.WriteFile(filename.String(), cpuTempsj, 0644)
+	err = os.WriteFile(filename, cpuTempsj, 0644)
 	return err
 }
 
@@ -75,12 +73,18 @@ func main() {
 	}
 	defer db.Close()
 
+	// run overview
 	err = exportOverview()
 	if err != nil {
 		log.Printf("couldn't export overview to json: %s\n", err)
 	}
-	err = exportCpuTemps("current")
-	if err != nil {
-		log.Printf("couldn't export current cpu temps to json: %s\n", err)
+	// export CPU temps
+	for _, period := range periods {
+		err = exportCpuTemps(period)
+		if err != nil {
+			log.Printf("couldn't export %s cpu temps to json: %s\n",
+				period, err)
+		}
+		time.Sleep(1)
 	}
 }
