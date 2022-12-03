@@ -1,3 +1,15 @@
+## 0.18.0 (2022-12-03
+
+### gwgather
+
+- db table `daily` was accumulating values every 48h rather than
+  every 24. This has been fixed
+
+### web
+
+- Hourly and daily CPU graph now available
+- Host missing calculation fixed
+
 ## 0.17.3 (2022-07-16)
 
 ### web

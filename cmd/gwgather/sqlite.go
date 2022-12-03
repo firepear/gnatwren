@@ -69,7 +69,10 @@ func dbLoadNodeStatus() {
 }
 
 func dbPruneMigrate() {
-	var c int64
+	var c  int64
+	var ts int64
+	var q  string
+	var d  string
 	// timestamp, one hour ago
 	tlimit := time.Now().Unix() - 3600
 	// if nothing newer than tlimit exists in the current table,
@@ -87,23 +90,19 @@ func dbPruneMigrate() {
 	row = db.QueryRow("SELECT ts FROM hourly ORDER BY ts DESC LIMIT 1")
 	switch err := row.Scan(&c); err {
 	case sql.ErrNoRows:
-		// treat an empty table as a nil
+		// treat an empty table as a nil error
 		fallthrough
 	case nil:
-		//  do nothing if the most recent timestamp is
-		//  less than 1h old AND NOT zero (empty table)
+		// do nothing if the most recent timestamp is less
+		// than 1h old AND NOT zero
 		if c >= tlimit && c != 0 {
 			break
 		}
-		// for each host, grab the newest row from common --
+		// for each host, grab the newest row from common,
 		// since we test for the most recent row in hourly
-		// being at least 1h old -- and copy to hourly
+		// being at least 1h old, and copy to hourly
+		q = "SELECT ts, data FROM current WHERE host = ? ORDER BY ts DESC LIMIT 1"
 		for host := range nodeStatus {
-			var (
-				q  = "SELECT ts, data FROM current WHERE host = ? ORDER BY ts DESC LIMIT 1"
-				ts int64
-				d  string
-			)
 			row = db.QueryRow(q, host, tlimit)
 			if err := row.Scan(&ts, &d); err != nil {
 				log.Printf("didn't find current data for %s: err: %s\n", host, err)
@@ -128,26 +127,22 @@ func dbPruneMigrate() {
 	}
 	stmt.Exec(tlimit)
 
-	// now find the most recent timestamp from the daily table
+	// update the daily table
 	c = 0
-	tlimit = tlimit - 169200 // go back another 47h
+	// find the most recent timestamp from the daily table
 	row = db.QueryRow("SELECT ts FROM daily ORDER BY ts DESC LIMIT 1")
 	switch err := row.Scan(&c); err {
 	case sql.ErrNoRows:
 		fallthrough
 	case nil:
-		//  do nothing if the most recent timestamp is
-		//  less than 48h old AND NOT zero (empty table)
-		if c >= tlimit && c != 0 {
+		// do nothing if the most recent timestamp is less
+		// than 24h old AND NOT zero (empty table)
+		if c >= 86400 && c != 0 {
 			break
 		}
 		// otherwise, copy most recent data for each host from hourly to daily
+		q  = "SELECT ts, data FROM hourly WHERE host = ? ORDER BY ts DESC LIMIT 1"
 		for host := range nodeStatus {
-			var (
-				q  = "SELECT ts, data FROM hourly WHERE host = ? ORDER BY ts DESC LIMIT 1"
-				ts int64
-				d  string
-			)
 			row = db.QueryRow(q, host, tlimit)
 			if err := row.Scan(&ts, &d); err != nil {
 				log.Printf("didn't find hourly data for %s: err: %s\n", host, err)
@@ -165,13 +160,15 @@ func dbPruneMigrate() {
 		return
 	}
 	// prune hourly
+	// set tlimit according to config retention
+	tlimit = config.db.hours_retained * 3600
 	stmt, err = db.Prepare("DELETE FROM hourly WHERE ts < ?")
 	if err != nil {
 		log.Printf("db: can't prune hourly table: %s\n", err)
 	}
 	stmt.Exec(tlimit)
 	// and daily
-	tlimit = tlimit - 5011200 // go back another 58 days
+	tlimit = config.db.days_retained * 86400
 	stmt, err = db.Prepare("DELETE FROM daily WHERE ts < ?")
 	if err != nil {
 		log.Printf("db: can't prune daily table: %s\n", err)
