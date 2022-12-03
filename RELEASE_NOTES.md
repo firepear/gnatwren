@@ -8,7 +8,8 @@
 ### web
 
 - Hourly and daily CPU graph now available
-- Host missing calculation fixed
+- Host missing time calculation fixed
+- Javascript split into its own source file
 
 
 
