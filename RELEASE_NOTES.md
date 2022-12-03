@@ -3,6 +3,7 @@
 ### gwgather
 
 - CPU and GPU temps now exported to current, hourly, and daily files
+- `jq` added to container image
 
 ### web
 

@@ -17,7 +17,7 @@ RUN go build
 
 
 FROM nginx:stable-alpine
-RUN apk --no-cache add busybox busybox-initscripts sqlite
+RUN apk --no-cache add busybox busybox-initscripts sqlite jq
 COPY --from=builder /gwg/cmd/gwgather/gwgather /gwg/cmd/gwdump/gwdump /gwg/assets/dockerstart.sh /usr/local/bin/
 COPY --from=builder /gwg/assets/gwgather-config.json /etc/gwgather-config.json
 CMD ["/usr/local/bin/dockerstart.sh"]
