@@ -154,9 +154,9 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 		if strings.Contains(k, "NVIDIA-SMI has failed") {
 			// an Nvidia card too old for the installed driver
 			cmd := "/bin/env lspci -mm | grep VGA"
-			vgabytes, err := exec.Command("/bin/env", "bash", "-c", cmd).Output()
-			_, gpudata.Name, _ = string.Cut(string(vgabytes), "[")
-			gpudata.Name, _, _ = string.Cut(gpudata.Name, "]")
+			vgabytes, _ := exec.Command("/bin/env", "bash", "-c", cmd).Output()
+			_, gpudata.Name, _ = strings.Cut(string(vgabytes), "[")
+			gpudata.Name, _, _ = strings.Cut(gpudata.Name, "]")
 			break
 		}
 
