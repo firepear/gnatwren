@@ -146,20 +146,19 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 		line := scanner.Text()
 		chunks := strings.Split(line, ":")
 		if len(chunks) < 2 {
+			if strings.Contains(chunks[0], "NVIDIA-SMI has failed") {
+				// an Nvidia card too old for the installed driver
+				cmd := "/bin/env lspci -mm | grep VGA"
+				vgabytes, _ := exec.Command("/bin/env", "bash", "-c", cmd).Output()
+				_, gpudata.Name, _ = strings.Cut(string(vgabytes), "[")
+				gpudata.Name, _, _ = strings.Cut(gpudata.Name, "]")
+				break
+			}
 			continue
 		}
+
 		k := strings.TrimSpace(chunks[0])
 		v := strings.TrimSpace(chunks[1])
-
-		if strings.Contains(k, "NVIDIA-SMI has failed") {
-			// an Nvidia card too old for the installed driver
-			cmd := "/bin/env lspci -mm | grep VGA"
-			vgabytes, _ := exec.Command("/bin/env", "bash", "-c", cmd).Output()
-			_, gpudata.Name, _ = strings.Cut(string(vgabytes), "[")
-			gpudata.Name, _, _ = strings.Cut(gpudata.Name, "]")
-			break
-		}
-
 		switch k {
 		case "Product Name":
 			gpudata.Name = strings.TrimPrefix(v, "NVIDIA ")
