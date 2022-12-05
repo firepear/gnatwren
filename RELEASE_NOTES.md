@@ -5,10 +5,15 @@
 - CPU and GPU temps now exported to current, hourly, and daily files
 - `jq` added to container image
 
+### gwagent
+
+- Nvidia cards too old for the installed driver now have their model
+  name collected from `lspci`
+
 ### web
 
 - Hourly and daily CPU graph now available
-- Host missing calculation fixed
+- Host missing time calculation fixed
 
 
 
