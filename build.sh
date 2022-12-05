@@ -4,5 +4,6 @@ docker image prune -f
 docker build --tag gwgather .
 docker volume create gwg
 docker run --name gwgather -d --restart always -p 9098:80 -p 11099:11099 -v gwg:/usr/share/nginx/html gwgather
-docker cp assets/web/index.html assets/web/main.js gwgather:/usr/share/nginx/html/
+docker cp assets/web/index.html gwgather:/usr/share/nginx/html/
+docker cp assets/web/main.js gwgather:/usr/share/nginx/html/
 
