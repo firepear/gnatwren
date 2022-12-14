@@ -79,14 +79,14 @@ adaptable to any situation without much effort.
 
 #### gwagent
 
-- `go build ./cmd/gwagent`-
-- `mv ./cmd/gwagent/gwagent /usr/local/bin`
+- `go build ./cmd/gwagent`
+- `mv ./gwagent /usr/local/bin`
 - A systemd unit file for `gwagent` is at
   `./assets/gnatwren-agent.service`
   - It should be deployed according to systemd standards on the agent
     nodes
 - A config file for `gwagent` is at `./assets/gwagent-config.json`
-  - Edit and deploy to `/etc/gnatwren/gwagent-config.json` on agent
+  - Edit and deploy to `/etc/gnatwren/agent-config.json` on agent
     nodes
   - It must be readable by user `nobody`
 - On the agent nodes, create the directory `/var/run/gnatwren`, which
