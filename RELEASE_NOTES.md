@@ -1,4 +1,13 @@
-## PENDING 0.19.0 (2022-12-xx)
+## WIP 0.20.0 (2022-12-xx)
+
+### web
+
+- Hourly and daily CPU graph now available
+
+
+## 0.19.0 (2022-12-18)
+
+- Petrel dependency updated to 0.36.0
 
 ### gwgather
 
@@ -12,7 +21,6 @@
 
 ### web
 
-- Hourly and daily CPU graph now available
 - Host missing time calculation fixed
 - Javascript split into its own source file
 
