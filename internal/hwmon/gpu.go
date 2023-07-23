@@ -159,6 +159,7 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 
 		k := strings.TrimSpace(chunks[0])
 		v := strings.TrimSpace(chunks[1])
+
 		switch k {
 		case "Product Name":
 			gpudata.Name = strings.TrimPrefix(v, "NVIDIA ")
@@ -167,14 +168,29 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 		case "GPU Shutdown Temp":
 			gpudata.TempMax = strings.ReplaceAll(v, " ", "")
 		case "Fan Speed":
+			// here, if we have a value of "N/A", that's
+			// what we want to display, becuase we're not
+			// getting a fan speed
 			if v == "N/A" {
 				gpudata.Fan = v
 			} else {
 				gpudata.Fan = strings.ReplaceAll(v, " ", "")
 			}
 		case "Power Draw":
+			// but in the power data, if we're getting
+			// N/A, we're looking at the new Module
+			// section rather than the GPU section and
+			// want to ignore. later this may need a better, more permanent solution
+			if v == "N/A" {
+				continue
+			}
 			gpudata.PowCur = strings.ReplaceAll(v, " ", "")
-		case "Power Limit":
+		case "Current Power Limit": // newer
+			fallthrough
+		case "Power Limit":         // older
+			if v == "N/A" {
+				continue
+			}
 			gpudata.PowMax = strings.ReplaceAll(v, " ", "")
 		}
 	}

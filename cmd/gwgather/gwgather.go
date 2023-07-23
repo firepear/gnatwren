@@ -67,7 +67,7 @@ func main() {
 		os.Exit(1)
 	}
 	// then register handler function(s)
-	err = petrel.Register("agentupdate", "blob", agentUpdate)
+	err = petrel.Register("agentupdate", agentUpdate)
 	if err != nil {
 		log.Printf("failed to register responder 'agentupdate': %s\n", err)
 		os.Exit(1)

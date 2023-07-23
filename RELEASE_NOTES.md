@@ -1,8 +1,8 @@
-## WIP 0.20.0 (2022-12-xx)
+## 0.19.1 (2023-07-23)
 
-### web
-
-- Hourly and daily CPU graph now available
+- Changes for Petrel v0.36
+- Changes for Nvidia GPU data collection (because we have to scrape
+  `nvidia-smi` rather than use `sysfs`)
 
 
 ## 0.19.0 (2022-12-18)
