@@ -55,7 +55,8 @@ yet.
 ### gwgather via Docker
 
 To build and launch a Docker container which runs `gwgather` and an
-instance of `nginx` for web monitoring, run `./build.sh`
+instance of `nginx` for web monitoring, run `./build.sh` (via `sudo`
+if you're using `podman` without rootless containers).
 
 Re-run the build script anytime. No monitoring data will be lost.
 
