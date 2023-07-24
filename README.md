@@ -67,8 +67,9 @@ needed, attach with
 
 ### gwagent via Ansible
 
-My Homefarm project contains an Ansible playbook which will build
-gwagent and deploy it to a set of nodes.
+My Homefarm project contains a
+[playbook](https://github.com/firepear/homefarm/blob/main/gnatwren.yml)
+which will build gwagent and deploy it to a set of nodes.
 
 ### Manual install
 
