@@ -60,7 +60,7 @@ func GpuName(manu string) string {
 		return "ERRNOGPUDEV"
 	}
 	// then we can get the device id
-	modfile, err := os.Open(fmt.Sprintf("%s/device/device", pathbytes))
+	modfile, err := os.Open(fmt.Sprintf("%s/device/device", pathbytes[:len(pathbytes)-1]))
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -117,7 +117,7 @@ func GpuSysfsLoc() string {
 		log.Println("Couldn't find GPU device path:", err)
 		return "ERRNOGPUDEV"
 	}
-	gpus, err := filepath.Glob(fmt.Sprintf("%s/device/hwmon/*", pathbytes))
+	gpus, err := filepath.Glob(fmt.Sprintf("%s/device/hwmon/*", pathbytes[:len(pathbytes)-1]))
 	if err != nil {
 		return "NONE"
 	}
