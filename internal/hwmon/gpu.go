@@ -242,7 +242,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	}
 
 	// power data
-	file, err = os.Open(fmt.Sprintf("%s/power1_average", loc))
+	file, err = os.Open(fmt.Sprintf("%s/power1_input", loc))
 	if err != nil {
 		gpudata.PowCur = "N/A"
 	} else {
