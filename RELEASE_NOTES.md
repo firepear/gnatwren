@@ -1,3 +1,9 @@
+## 0.20.0 (2024-11-19)
+
+- Fixes for AMD GPUs
+- Added `-once` flag to gwagent, which is useful for testing (gathers
+  metrics, dumps to stdout, and exits)
+
 ## 0.19.1 (2023-07-23)
 
 - Changes for Petrel v0.36
