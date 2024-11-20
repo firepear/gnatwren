@@ -40,6 +40,9 @@ var (
 	gpumanu = ""
 	gpuname = ""
 	gpuloc  = ""
+
+	stowtick time.Timer
+	metrictick time.Timer
 )
 
 func gatherMetrics() ([]byte, error) {
@@ -173,11 +176,11 @@ func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 
 func main() {
 	// find out where the gwagent config file is and read it in
-	var configfile string
-	flag.StringVar(&configfile, "config", "/etc/gnatwren/agent.json", "Location of the gwagent config file")
+	var configfile = flag.String("config", "/etc/gnatwren/agent.json", "Location of the gwagent config file")
+	var runonce = flag.Bool("once", false, "Gather data once, print to stdout, and exit")
 	flag.Parse()
 	config := data.AgentConfig{}
-	content, err := os.ReadFile(configfile)
+	content, err := os.ReadFile(*configfile)
 	if err != nil {
 		log.Fatalf("can't read config: %s; bailing", err)
 	}
@@ -217,6 +220,12 @@ func main() {
 	err = <-c
 	if err != nil {
 		log.Printf("%s\n", err)
+	}
+
+	if *runonce {
+		sample, _ := gatherMetrics()
+		fmt.Println(sample)
+		os.Exit(0)
 	}
 
 	// now setup a ticker for future stowage checks

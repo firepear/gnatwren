@@ -51,8 +51,16 @@ func GpuName(manu string) string {
 	}
 
 	// the other thing we need before starting is to look up our
-	// model id and construct a regexp from it
-	modfile, err := os.Open("/sys/class/drm/card0/device/device")
+	// model id and construct a regexp from it. first we need to
+	// find where the first card is...
+	cmd := "ls -d /sys/class/drm/card? | head -1"
+	pathbytes, err := exec.Command("/bin/env", "bash", "-c", cmd).Output()
+	if err != nil {
+		log.Println("Couldn't find GPU device path:", err)
+		return "ERRNOGPUDEV"
+	}
+	// then we can get the device id
+	modfile, err := os.Open(fmt.Sprintf("%s/device/device", pathbytes))
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -103,7 +111,13 @@ func GpuName(manu string) string {
 // directory corresponding to the first GPU in a system. This is later
 // used by `Gpuinfo()`.
 func GpuSysfsLoc() string {
-	gpus, err := filepath.Glob("/sys/class/drm/card0/device/hwmon/*")
+	cmd := "ls -d /sys/class/drm/card? | head -1"
+	pathbytes, err := exec.Command("/bin/env", "bash", "-c", cmd).Output()
+	if err != nil {
+		log.Println("Couldn't find GPU device path:", err)
+		return "ERRNOGPUDEV"
+	}
+	gpus, err := filepath.Glob(fmt.Sprintf("%s/device/hwmon/*", pathbytes))
 	if err != nil {
 		return "NONE"
 	}
