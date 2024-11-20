@@ -224,7 +224,7 @@ func main() {
 
 	if *runonce {
 		sample, _ := gatherMetrics()
-		fmt.Println(sample)
+		fmt.Printf("%s\n", sample)
 		os.Exit(0)
 	}
 
