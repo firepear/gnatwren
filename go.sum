@@ -1,4 +1,4 @@
 github.com/firepear/petrel v0.40.0 h1:UKNMUALeKj2WF/MmPqMXA+JuARwg+xJmiHkWW8fYnIQ=
 github.com/firepear/petrel v0.40.0/go.mod h1:VroClOgWVZCsvFY5rshMJ7dtp7/6XTkrZxXs2CFmWq8=
-github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwpU1Y=
-github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
+github.com/mattn/go-sqlite3 v1.14.24 h1:tpSp2G2KyMnnQu99ngJ47EIkWVmliIizyZBfPrBWDRM=
+github.com/mattn/go-sqlite3 v1.14.24/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
