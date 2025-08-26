@@ -52,11 +52,11 @@ func GpuName(manu string) string {
 
 	// the other thing we need before starting is to look up our
 	// model id and construct a regexp from it
-	cards, err := filepath.Glob("/sys/class/drm/card?")
-	if err != nil {
+	gpus, err := filepath.Glob("/sys/class/drm/card?")
+	if err != nil || len(gpus) == 0 {
 		return "NONE"
 	}
-	modfile, err := os.Open(fmt.Sprintf("%s/device/device", cards[0]))
+	modfile, err := os.Open(fmt.Sprintf("%s/device/device", gpus[0]))
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -107,14 +107,15 @@ func GpuName(manu string) string {
 // directory corresponding to the first GPU in a system. This is later
 // used by `Gpuinfo()`.
 func GpuSysfsLoc() string {
-	gpus, err := filepath.Glob("/sys/class/drm/card0/device/hwmon/*")
-	if err != nil {
+	gpus, err := filepath.Glob("/sys/class/drm/card?")
+	if err != nil || len(gpus) == 0 {
 		return "NONE"
 	}
-	if len(gpus) > 0 {
-		return gpus[0]
+	gpus, err = filepath.Glob(fmt.Sprintf("%s/device/hwmon/*", gpus[0]))
+	if err != nil || len(gpus) == 0 {
+		return "NONE"
 	}
-	return "NONE"
+	return gpus[0]
 }
 
 // Gpuinfo is a top-level function for gathering GPU data. It will

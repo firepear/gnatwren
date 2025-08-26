@@ -1,3 +1,10 @@
+## 0.20.0 (2025-08-xx)
+
+- Updated for Petrel v0.40
+- Integrated logging with Petrel
+- Updated echarts version for web UI
+
+
 ## 0.19.1 (2023-07-23)
 
 - Changes for Petrel v0.36
