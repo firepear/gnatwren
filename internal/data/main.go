@@ -68,3 +68,7 @@ type GPUdata struct {
 	PowCur  string
 	PowMax  string
 }
+
+var(
+	Ver = "0.20.0"
+)

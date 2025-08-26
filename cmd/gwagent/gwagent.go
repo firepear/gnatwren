@@ -40,9 +40,6 @@ var (
 	gpumanu = ""
 	gpuname = ""
 	gpuloc  = ""
-
-	stowtick time.Timer
-	metrictick time.Timer
 )
 
 func gatherMetrics() ([]byte, error) {
@@ -178,7 +175,13 @@ func main() {
 	// find out where the gwagent config file is and read it in
 	var configfile = flag.String("config", "/etc/gnatwren/agent.json", "Location of the gwagent config file")
 	var runonce = flag.Bool("once", false, "Gather data once, print to stdout, and exit")
+	var version = flag.Bool("version", false, "Print version to stdout")
 	flag.Parse()
+
+	if *version {
+		fmt.Printf("gwagent %s\n", data.Ver)
+		os.Exit(0)
+	}
 
 	// get machine architecture, OS, hostname, and gpu maker (plus
 	// other details, sometimes). these things are either
