@@ -56,12 +56,11 @@ func main() {
 
 	// configure the petrel server
 	pc := &ps.Config{
-		Sockname: config.BindAddr,
-		Msglvl:   config.Log.Level,
+		Addr: config.BindAddr,
 		Timeout:  5,
 	}
 	// and instantiate it
-	petrel, err := ps.TCPServer(pc)
+	petrel, err := ps.New(pc)
 	if err != nil {
 		log.Printf("could not instantiate Server: %s\n", err)
 		os.Exit(1)

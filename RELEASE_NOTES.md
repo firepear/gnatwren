@@ -1,8 +1,11 @@
-## 0.20.0 (2024-11-19)
+## 0.20.0 (2025-08-xx)
 
 - Fixes for AMD GPUs
 - Added `-once` flag to gwagent, which is useful for testing (gathers
   metrics, dumps to stdout, and exits)
+- Updated for Petrel v0.40
+- Integrated logging with Petrel
+- Updated echarts version for web UI
 
 ## 0.19.1 (2023-07-23)
 

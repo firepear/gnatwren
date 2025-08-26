@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	req = []byte("agentupdate")
+	req = "agentupdate"
 	nl  = []byte("\n")
 	mux = &sync.RWMutex{}
 	// the directory and filename where we stow metrics that we
@@ -65,7 +65,7 @@ func sendMetrics(pconf *pc.Config) {
 	// get metrics for this run
 	sample, err := gatherMetrics()
 	// try to instantiate a petrel client
-	c, err := pc.TCPClient(pconf)
+	c, err := pc.New(pconf)
 	if err != nil {
 		// on failure, stow metrics and return error
 		log.Printf("can't initialize client: %s\n", err)
@@ -80,7 +80,7 @@ func sendMetrics(pconf *pc.Config) {
 	defer c.Quit()
 
 	// we have a client; send metrics to gwgather
-	_, err = c.Dispatch(req, sample)
+	err = c.Dispatch(req, sample)
 	if err != nil {
 		// on failure, stow metrics
 		log.Printf("can't dispatch metrics: %s\n", err)
@@ -133,7 +133,7 @@ func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 
 	sent := 0
 	// try to instantiate a petrel client
-	pet, err := pc.TCPClient(pconf)
+	pet, err := pc.New(pconf)
 	if err != nil {
 		c <- fmt.Errorf("found stowed metrics but can't connect: %s; deferring\n", err)
 		return
@@ -155,7 +155,7 @@ func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 	for scanner.Scan() {
 		m := scanner.Bytes()
 		// TODO handle the actual response, to know how not to count dupes
-		_, err = pet.Dispatch(req, m)
+		err = pet.Dispatch(req, m)
 		if err != nil && !errors.Is(err, io.EOF) {
 			log.Printf("sent %d metrics then hit a problem: %s\n", sent, err)
 			petok = false

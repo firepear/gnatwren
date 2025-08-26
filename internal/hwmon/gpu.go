@@ -51,16 +51,12 @@ func GpuName(manu string) string {
 	}
 
 	// the other thing we need before starting is to look up our
-	// model id and construct a regexp from it. first we need to
-	// find where the first card is...
-	cmd := "ls -d /sys/class/drm/card? | head -1"
-	pathbytes, err := exec.Command("/bin/env", "bash", "-c", cmd).Output()
-	if err != nil {
-		log.Println("Couldn't find GPU device path:", err)
-		return "ERRNOGPUDEV"
+	// model id and construct a regexp from it
+	gpus, err := filepath.Glob("/sys/class/drm/card?")
+	if err != nil || len(gpus) == 0 {
+		return "NONE"
 	}
-	// then we can get the device id
-	modfile, err := os.Open(fmt.Sprintf("%s/device/device", pathbytes[:len(pathbytes)-1]))
+	modfile, err := os.Open(fmt.Sprintf("%s/device/device", gpus[0]))
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -111,20 +107,15 @@ func GpuName(manu string) string {
 // directory corresponding to the first GPU in a system. This is later
 // used by `Gpuinfo()`.
 func GpuSysfsLoc() string {
-	cmd := "ls -d /sys/class/drm/card? | head -1"
-	pathbytes, err := exec.Command("/bin/env", "bash", "-c", cmd).Output()
-	if err != nil {
-		log.Println("Couldn't find GPU device path:", err)
-		return "ERRNOGPUDEV"
-	}
-	gpus, err := filepath.Glob(fmt.Sprintf("%s/device/hwmon/*", pathbytes[:len(pathbytes)-1]))
-	if err != nil {
+	gpus, err := filepath.Glob("/sys/class/drm/card?")
+	if err != nil || len(gpus) == 0 {
 		return "NONE"
 	}
-	if len(gpus) > 0 {
-		return gpus[0]
+	gpus, err = filepath.Glob(fmt.Sprintf("%s/device/hwmon/*", gpus[0]))
+	if err != nil || len(gpus) == 0 {
+		return "NONE"
 	}
-	return "NONE"
+	return gpus[0]
 }
 
 // Gpuinfo is a top-level function for gathering GPU data. It will
@@ -185,7 +176,7 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 			// here, if we have a value of "N/A", that's
 			// what we want to display, becuase we're not
 			// getting a fan speed
-			if v == "N/A" {
+			if v == "NA" {
 				gpudata.Fan = v
 			} else {
 				gpudata.Fan = strings.ReplaceAll(v, " ", "")
@@ -195,14 +186,14 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 			// N/A, we're looking at the new Module
 			// section rather than the GPU section and
 			// want to ignore. later this may need a better, more permanent solution
-			if v == "N/A" {
+			if v == "NA" {
 				continue
 			}
 			gpudata.PowCur = strings.ReplaceAll(v, " ", "")
 		case "Current Power Limit": // newer
 			fallthrough
 		case "Power Limit":         // older
-			if v == "N/A" {
+			if v == "NA" {
 				continue
 			}
 			gpudata.PowMax = strings.ReplaceAll(v, " ", "")
@@ -219,7 +210,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	// temperature data
 	file, err := os.Open(fmt.Sprintf("%s/temp1_input", loc))
 	if err != nil {
-		gpudata.TempCur = "N/A"
+		gpudata.TempCur = "NA"
 	} else {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
@@ -231,7 +222,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	}
 	file, err = os.Open(fmt.Sprintf("%s/temp1_crit", loc))
 	if err != nil {
-		gpudata.TempMax = "N/A"
+		gpudata.TempMax = "NA"
 	} else {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
@@ -244,7 +235,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	// power data
 	file, err = os.Open(fmt.Sprintf("%s/power1_input", loc))
 	if err != nil {
-		gpudata.PowCur = "N/A"
+		gpudata.PowCur = "NA"
 	} else {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
@@ -256,7 +247,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	}
 	file, err = os.Open(fmt.Sprintf("%s/power1_cap_max", loc))
 	if err != nil {
-		gpudata.PowMax = "N/A"
+		gpudata.PowMax = "NA"
 	} else {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
@@ -295,6 +286,6 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	} else if fancur > -1 {
 		gpudata.Fan = fmt.Sprintf("%dRPM", fancur)
 	} else {
-		gpudata.Fan = "N/A"
+		gpudata.Fan = "NA"
 	}
 }
