@@ -40,6 +40,9 @@ var (
 	gpumanu = ""
 	gpuname = ""
 	gpuloc  = ""
+
+	stowtick time.Timer
+	metrictick time.Timer
 )
 
 func gatherMetrics() ([]byte, error) {
@@ -173,11 +176,31 @@ func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 
 func main() {
 	// find out where the gwagent config file is and read it in
-	var configfile string
-	flag.StringVar(&configfile, "config", "/etc/gnatwren/agent.json", "Location of the gwagent config file")
+	var configfile = flag.String("config", "/etc/gnatwren/agent.json", "Location of the gwagent config file")
+	var runonce = flag.Bool("once", false, "Gather data once, print to stdout, and exit")
 	flag.Parse()
+
+	// get machine architecture, OS, hostname, and gpu maker (plus
+	// other details, sometimes). these things are either
+	// irritating or expensive to fetch, so we do it here, once
+	arch = hwmon.Arch()
+	machos = hwmon.OS()
+	hostname, _ = os.Hostname()
+	gpumanu = hwmon.GpuManu()
+	if gpumanu != "nvidia" {
+		gpuname = hwmon.GpuName(gpumanu)
+		gpuloc = hwmon.GpuSysfsLoc()
+	}
+	// if we're in once-mode, nothing else needs to happen
+	if *runonce {
+		sample, _ := gatherMetrics()
+		fmt.Printf("%s\n", sample)
+		os.Exit(0)
+	}
+
+	// read config
 	config := data.AgentConfig{}
-	content, err := os.ReadFile(configfile)
+	content, err := os.ReadFile(*configfile)
 	if err != nil {
 		log.Fatalf("can't read config: %s; bailing", err)
 	}
@@ -185,6 +208,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("can't parse config as JSON: %s; bailing", err)
 	}
+
 	// set up the things we need to pick our reporting intervals
 	rand.Seed(time.Now().UnixNano())
 	intlen := len(config.Intervals)
@@ -198,18 +222,6 @@ func main() {
 	// set up a channel to handle termination events
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
-
-	// get machine architecture, OS, hostname, and gpu maker (plus
-	// other details, sometimes). these things are either
-	// irritating or expensive to fetch, so we do it here, once
-	arch = hwmon.Arch()
-	machos = hwmon.OS()
-	hostname, _ = os.Hostname()
-	gpumanu = hwmon.GpuManu()
-	if gpumanu != "nvidia" {
-		gpuname = hwmon.GpuName(gpumanu)
-		gpuloc = hwmon.GpuSysfsLoc()
-	}
 
 	// handle any saved metrics, synchronously, if we have them
 	c := make(chan error)
