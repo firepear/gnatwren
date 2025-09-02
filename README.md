@@ -21,21 +21,14 @@ Reporting of the following data is implemented:
 - GPU name, temperature, fan speed, and power stats (Nvidia and AMD; name for Intel)
 - Time since last check-in
 
-The following events are shown on the web status page:
+The web status page also displays:
 
 - CPU temperature
-  - Warning status if CPU over 80C
-  - Critical status if CPU over 90C
+  - Warning status if over configured value
+  - Critical status if over configured value
 - Last check-in
   - Critical status if more than 210s overdue
   - Warning if a node ceases to be present in current data
-
-## Visualization
-
-This screenshot shows some new-since v0.11.0 features: per-core clocks
-when hovering over the averaged clock, aa critical warning indicator
-for machines that have not checked in recently, and GPU data for
-Nvidia and AMD cards.
 
 ![wip viz](https://i.imgur.com/fWPAxVU.png)
 
