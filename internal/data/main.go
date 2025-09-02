@@ -6,6 +6,7 @@ type AgentConfig struct {
 	Active     bool   `json:"active"`
 	Intervals  []int  `json:"intervals"`
 	Stowdir    string `json:"workdir"`
+	Gpu        string `json:"gpu"`
 }
 
 // gwgather configuration
@@ -14,6 +15,7 @@ type GatherConfig struct {
 	DB       GatherDBConfig   `json:"db"`
 	Files    GatherFileConfig `json:"files"`
 	Log      GatherLogConfig  `json:"log"`
+	UI       GatherUIConfig   `json:"ui"`
 }
 
 type GatherLogConfig struct {
@@ -30,6 +32,12 @@ type GatherDBConfig struct {
 type GatherFileConfig struct {
 	JsonLoc string `json:"json_location"`
 	JsonInt int64  `json:"json_interval"`
+}
+
+type GatherUIConfig struct {
+	Title       string `json:"title"`
+	TempHiCpu   int64  `json:"temp_hi_cpu"`
+	TempCritCpu int64 `json:"temp_crit_cpu"`
 }
 
 // AgentStatus is a repackaged AgentPayload that adds the most recent

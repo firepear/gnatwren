@@ -115,6 +115,10 @@ adaptable to any situation without much effort.
 - log
   - `file`: The file to write output to
   - `level`: Logging level ("fatal", "error", "conn", "debug")
+- ui (Web UI config)
+  - `title`: Title for stats page
+  - `temp_hi_cpu`: Temp at which to display the high warning for CPU
+  - `temp_crit_cpu`: Temp at which to display the critical warning for CPU
 
 ### gwagent
 
@@ -124,3 +128,6 @@ adaptable to any situation without much effort.
   selected from after each report is made. The default set is the
   primes between 30 and 50, resulting in (on average) 1.51 updates per
   minute, while minimizing simultaneous updates
+- `gpu`: Specify which GPU to monitor, for non-Nvidia GPUs. Defaults to empty string, which searches for the first defined GPU in the system. Non-null example: `card2`
+- `workdir`: Directory where updates are stashed in the event of
+  network issues

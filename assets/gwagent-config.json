@@ -2,5 +2,6 @@
     "gather_addr": "10.1.1.1:11099",
     "active": true,
     "intervals": [31, 37, 41, 43, 47],
+    "gpu": "",
     "workdir": "/var/lib/gnatwren"
 }
