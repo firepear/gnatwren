@@ -37,7 +37,7 @@ type GatherFileConfig struct {
 type GatherUIConfig struct {
 	Title       string `json:"title"`
 	TempHiCpu   int64  `json:"temp_hi_cpu"`
-	TempCritCpu int64 `json:"temp_crit_cpu"`
+	TempCritCpu int64  `json:"temp_crit_cpu"`
 }
 
 // AgentStatus is a repackaged AgentPayload that adds the most recent

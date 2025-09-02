@@ -1,5 +1,6 @@
-## 0.20.0 (2025-08-xx)
+## 0.20.0 (2025-09-xx)
 
+- New config points for gather, agent, and webui
 - Fixes for AMD GPUs
 - Added `-once` flag to gwagent, which is useful for testing (gathers
   metrics, dumps to stdout, and exits)
