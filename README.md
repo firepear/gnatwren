@@ -128,6 +128,8 @@ adaptable to any situation without much effort.
   selected from after each report is made. The default set is the
   primes between 30 and 50, resulting in (on average) 1.51 updates per
   minute, while minimizing simultaneous updates
-- `gpu`: Specify which GPU to monitor, for non-Nvidia GPUs. Defaults to empty string, which searches for the first defined GPU in the system. Non-null example: `card2`
+- `gpu`: Specify which GPU to monitor, for non-Nvidia GPUs. Defaults
+  to empty string, which searches for the first defined GPU in the
+  system. Example: `card2` (as in `/sys/class/drm/card2`)
 - `workdir`: Directory where updates are stashed in the event of
   network issues

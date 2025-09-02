@@ -1,11 +1,11 @@
 ## 0.20.0 (2025-09-xx)
 
-- New config points for gather, agent, and webui
+- New config points for gather and webui (see README)
 - Fixes for AMD GPUs
 - Added `-once` flag to gwagent, which is useful for testing (gathers
   metrics, dumps to stdout, and exits)
 - Updated for Petrel v0.40
-- Integrated logging with Petrel
+- Integrated logging with Petrel (mostly)
 - Updated echarts version for web UI
 
 ## 0.19.1 (2023-07-23)
