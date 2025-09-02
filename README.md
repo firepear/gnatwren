@@ -39,65 +39,16 @@ Nvidia and AMD cards.
 
 ![wip viz](https://i.imgur.com/fWPAxVU.png)
 
-## Efficiency
 
-In my most recent check across my farm, over 5.5 days of runtime the
-client had used approximately 40 cpu-seconds on each node -- so a bit
-under 8 cpu-seconds per day on average. Memory usage was stable at
-approximately 8MB on an x86_64 system.
 
-The aggregator has been under much more frequent development, with
-large parts still be rewritten. I don't have solid statistics for it
-yet.
+# Configuration
 
-## Installation
+First, do `cp assets/*.json .`
 
-### gwgather via docker/podman
+This will create copies of the stock `gwgather` and `gwagent` config
+files which you can edit and use going forward.
 
-To build and launch a container which runs `gwgather` and an instance
-of `nginx` for web monitoring, run `./build.sh` (via `sudo` if you're
-using `podman` without rootless containers).
-
-Re-run the build script anytime. No monitoring data will be lost.
-
-The container has `busybox` and `sqlite` installed for diagnostics. If
-needed, attach with
-
-`docker exec -it gwgather ash`
-
-### gwagent via Ansible
-
-My Homefarm project contains a
-[playbook](https://github.com/firepear/homefarm/blob/main/gnatwren.yml)
-which will build gwagent and deploy it to a set of nodes.
-
-### Manual install
-
-#### gwgather
-
-Examining the build script and Dockerfile will show everything that is
-needed and how it's done. It's very straightforward and should be
-adaptable to any situation without much effort.
-
-#### gwagent
-
-- `go build ./cmd/gwagent`
-- `mv ./gwagent /usr/local/bin`
-- A systemd unit file for `gwagent` is at
-  `./assets/gnatwren-agent.service`
-  - It should be deployed according to systemd standards on the agent
-    nodes
-- A config file for `gwagent` is at `./assets/gwagent-config.json`
-  - Edit and deploy to `/etc/gnatwren/agent-config.json` on agent
-    nodes
-  - It must be readable by user `nobody`
-- On the agent nodes, create the directory `/var/run/gnatwren`, which
-  should be writable by `nobody`
-- Enable and start the `gnatwren-agent` service on agent nodes
-
-## Configuration
-
-### gwgather
+## gwgather
 
 - `bind_addr`: The interface and port to bind to. Changing to
   values other than `0.0.0.0` may cause failures on container startup
@@ -119,7 +70,7 @@ adaptable to any situation without much effort.
   - `temp_hi_cpu`: Temp at which to display the high warning for CPU
   - `temp_crit_cpu`: Temp at which to display the critical warning for CPU
 
-### gwagent
+## gwagent
 
 - `gather_addr`: IP addr and port where the gather daemon is listening
 - `active`: No current function
@@ -132,3 +83,44 @@ adaptable to any situation without much effort.
   system. Example: `card2` (as in `/sys/class/drm/card2`)
 - `workdir`: Directory where updates are stashed in the event of
   network issues
+
+
+
+# Installation
+
+## gwgather via docker/podman
+
+To build and launch a container which runs `gwgather` and an instance
+of `nginx` for web monitoring, run `./build.sh` (via `sudo` if you're
+using `podman` without rootless containers).
+
+Re-run the build script anytime. No monitoring data will be lost.
+
+The container has `busybox` and `sqlite` installed for diagnostics. If
+needed, attach with
+
+`docker exec -it gwgather ash`
+
+## Manual install
+
+### gwgather
+
+Examining the build script and Dockerfile will show everything that is
+needed and how it's done. It's very straightforward and should be
+adaptable to any situation without much effort.
+
+### gwagent
+
+- `go build ./cmd/gwagent`
+- `mv ./gwagent /usr/local/bin`
+- A systemd unit file for `gwagent` is at
+  `./assets/gnatwren-agent.service`
+  - It should be deployed according to systemd standards on the agent
+    nodes
+- A config file for `gwagent` is at `./assets/gwagent-config.json`
+  - Edit and deploy to `/etc/gnatwren/agent-config.json` on agent
+    nodes
+  - It must be readable by user `nobody`
+- On the agent nodes, create the directory `/var/run/gnatwren`, which
+  should be writable by `nobody`
+- Enable and start the `gnatwren-agent` service on agent nodes
