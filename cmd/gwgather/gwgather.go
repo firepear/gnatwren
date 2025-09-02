@@ -33,7 +33,7 @@ var (
 func main() {
 	// find out where the gwagent config file is and read it in
 	var configfile string
-	flag.StringVar(&configfile, "config", "/etc/gnatwren/gather.json", "Location of the gwgather config file")
+	flag.StringVar(&configfile, "config", "/etc/gnatwren/gwgather-config.json", "Location of the gwgather config file")
 	flag.Parse()
 
 	configstr, err := os.ReadFile(configfile)
