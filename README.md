@@ -99,9 +99,8 @@ adaptable to any situation without much effort.
 
 ### gwgather
 
-- `bind_addr`: The interface and port to bind to.Changing to
-  interfaces other than `0.0.0.0` may cause failures on startup within
-  Docker
+- `bind_addr`: The interface and port to bind to. Changing to
+  values other than `0.0.0.0` may cause failures on container startup
 - db
   - `location`: Path to the Gnatwren stats DB
   - `hours_retained`: How many hours of data to retain on an hourly
