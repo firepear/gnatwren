@@ -2,14 +2,17 @@ var url = "";
 var nodes;
 var metrics;
 var last_seen = {};
+var config = {};
+var els = {};
 
 var refresh = 120;
 var past_due = 90;
 var temp_warn = 80;
 var temp_crit = 90;
 
-var machSReq = new XMLHttpRequest();
-machSReq.addEventListener("load", plotMachStats);
+// load up els, our list of grabbable elements
+var elnames = ["doctitle", "pagetitle"];
+elnames.forEach((name) => ( els[name] = document.getElementById(name) ));
 
 function plotCPUTemps() {
     // reset cpuT.series and dimensions
@@ -108,9 +111,9 @@ function plotMachStats() {
         var tdTemp = document.createElement("td");
         var tempNum = Number(metric['Cpu']['Temp']).toFixed(2);
         var tempTxt = document.createTextNode(`${tempNum}C`);
-        if (tempNum > temp_crit) {
+        if (tempNum > config.ui.temp_crit_cpu) {
             tdTemp.className = 'crit';
-        } else if (tempNum > temp_warn) {
+        } else if (tempNum > config.ui.temp_hi_cpu) {
             tdTemp.className = 'warn';
         }
         tdTemp.appendChild(tempTxt);
@@ -222,6 +225,21 @@ function getMachStats() {
     machSReq.send();
 }
 
+async function getConf() {
+    config = await fetch(`${url}/gwgather-config.json`).then((r) => {return r.json() });
+    els["doctitle"].replaceChildren();
+    els["doctitle"].insertAdjacentHTML("beforeend", config.ui.title);
+    els["pagetitle"].replaceChildren();
+    els["pagetitle"].insertAdjacentHTML("beforeend", config.ui.title);
+
+    machSReq.addEventListener("load", plotMachStats);
+    cpuTReq.addEventListener("load", plotCPUTemps);
+}
+
+// ////////////////////////////////////////////////////////////// main routine
+
+getConf();
+
 // one of these for every chart
 var cpuTDom = document.getElementById('cputemps');
 var cpuTChart = echarts.init(cpuTDom);
@@ -239,25 +257,27 @@ cpuT = {
         dimensions: ['timestamp']
     }
 };
-/*    var cpuADom = document.getElementById('cpuavg');
-    var cpuAChart = echarts.init(cpuADom);
-    var cpuA;
-    // set options
-    cpuA = {
-        title: { text: 'CPU avg clock, last hour' },
-        tooltip: { trigger: 'axis' },
-        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-        xAxis: { type: 'time', boundaryGap: ['20%', '20%'], min: 'dataMin', max: 'dataMax' },
-        yAxis: { type: 'value', min: 'dataMin' },
-        series: [],
-        dataset: {
-            source: [],
-            dimensions: ['timestamp']
-        }
-    }; */
+/*
+  var cpuADom = document.getElementById('cpuavg');
+  var cpuAChart = echarts.init(cpuADom);
+  var cpuA;
+  // set options
+  cpuA = {
+  title: { text: 'CPU avg clock, last hour' },
+  tooltip: { trigger: 'axis' },
+  grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+  xAxis: { type: 'time', boundaryGap: ['20%', '20%'], min: 'dataMin', max: 'dataMax' },
+  yAxis: { type: 'value', min: 'dataMin' },
+  series: [],
+  dataset: {
+  source: [],
+  dimensions: ['timestamp']
+  }
+  };
+*/
 
+var machSReq = new XMLHttpRequest();
 var cpuTReq = new XMLHttpRequest();
-cpuTReq.addEventListener("load", plotCPUTemps);
 //var cpuAReq = new XMLHttpRequest();
 //cpuAReq.addEventListener("load", plotCPUAvgs);
 

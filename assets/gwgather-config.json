@@ -12,7 +12,7 @@
     "log": {
         "file": "/usr/share/nginx/html/gwgather.log",
         "level": "error"
-    }
+    },
     "ui": {
         "title": "Machine stats",
         "temp_hi_cpu": 90,

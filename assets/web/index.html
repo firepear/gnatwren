@@ -19,10 +19,10 @@
       select { margin-left: 5%; margin-right: 5%; margin-bottom: 1%;
                border: medium solid #69f; border-radius: 10px; }
     </style>
-    <title>Homefarm</title>
+    <title id="doctitle">Status</title>
   </head>
   <body>
-    <h2>Homefarm status</h2>
+    <h2 id="pagetitle">Status</h2>
     <div class="chart" style="margin-bottom: 1%;">
       <h3>System data</h3>
       <table>
@@ -51,12 +51,14 @@
       <option value="hourly">Hourly</option>
       <option value="daily">Daily</option>
     </select>
+    <!--
     <div class="chart" id="gputemps" style="height:400px;"></div>
     <select name="gputemp" id="gputemp-select">
       <option value="current">Current</option>
       <option value="hourly">Hourly</option>
       <option value="daily">Daily</option>
     </select>
+    -->
   </body>
   <script src="main.js"></script>
 </html>
