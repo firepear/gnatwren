@@ -158,7 +158,7 @@ function plotMachStats() {
         tdGdesc.appendChild(gdescTxt);
         // GPU temp
         var tdGtemp = document.createElement("td");
-        var gtempTxt = document.createTextNode(`${metric['Gpu']['TempCur']} / ${metric['Gpu']['TempMax']}`);
+        var gtempTxt = document.createTextNode(`${metric['Gpu']['TempCur']}/${metric['Gpu']['TempMax']}`);
         if (metric['Gpu']['TempCur'] == "" && metric['Gpu']['TempMax'] == "") {
             gtempTxt = document.createTextNode("---")
         }
@@ -174,7 +174,7 @@ function plotMachStats() {
         tdGfan.style.textAlign = 'right';
         // GPU power use
         var tdGpow = document.createElement("td");
-        var gpowTxt = document.createTextNode(`${metric['Gpu']['PowCur']} / ${metric['Gpu']['PowMax']}`);
+        var gpowTxt = document.createTextNode(`${metric['Gpu']['PowCur']}/${metric['Gpu']['PowMax']}`);
         if (metric['Gpu']['PowCur'] == "" && metric['Gpu']['PowMax'] == "") {
             gpowTxt = document.createTextNode("---")
         }

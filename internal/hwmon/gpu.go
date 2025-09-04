@@ -243,7 +243,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 			scanner.Scan()
 			num, _ := strconv.ParseFloat(scanner.Text(), 64)
 			// value is in microW
-			gpudata.PowCur = fmt.Sprintf("%.2fW", num/1000000.0)
+			gpudata.PowCur = fmt.Sprintf("%.0fW", num/1000000.0)
 			file.Close()
 		}
 	}
@@ -256,7 +256,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		num, _ := strconv.ParseFloat(scanner.Text(), 64)
-		gpudata.PowMax = fmt.Sprintf("%.2fW", num/1000000.0)
+		gpudata.PowMax = fmt.Sprintf("%.0fW", num/1000000.0)
 		file.Close()
 	}
 
