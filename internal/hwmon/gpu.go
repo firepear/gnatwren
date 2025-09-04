@@ -204,9 +204,6 @@ func GpuinfoNvidia(gpudata *data.GPUdata) {
 
 // GpuinfoAMD gathers GPU status data for AMD GPUs.
 func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
-	//   power1_average, power1_cap_max
-	//   fan1_input, fan1_max
-
 	// temperature data
 	file, err := os.Open(fmt.Sprintf("%s/temp1_input", loc))
 	if err != nil {
@@ -236,7 +233,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	//
 	// first, try the places where current usage might be
 	gpudata.PowCur = "NA"
-	for _, pwrfile := range []string{"power1_input", "power1_average"} {
+	for _, pwrfile := range []string{"power1_average", "power1_input"} {
 		file, err = os.Open(fmt.Sprintf("%s/%s", loc, pwrfile))
 		if err != nil {
 			continue
@@ -251,7 +248,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 		}
 	}
 	// then get power cap
-	file, err = os.Open(fmt.Sprintf("%s/power1_cap_max", loc))
+	file, err = os.Open(fmt.Sprintf("%s/power1_cap", loc))
 	if err != nil {
 		gpudata.PowMax = "NA"
 	} else {
