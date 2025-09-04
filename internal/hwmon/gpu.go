@@ -233,18 +233,25 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	}
 
 	// power data
-	file, err = os.Open(fmt.Sprintf("%s/power1_input", loc))
-	if err != nil {
-		gpudata.PowCur = "NA"
-	} else {
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-		scanner.Scan()
-		num, _ := strconv.ParseFloat(scanner.Text(), 64)
-		// value is in microW
-		gpudata.PowCur = fmt.Sprintf("%.2fW", num/1000000.0)
-		file.Close()
+	//
+	// first, try the places where current usage might be
+	gpudata.PowCur = "NA"
+	for _, pwrfile := range []string{"power1_input", "power1_average"} {
+		fmt.Printf("%s/%s\n", loc, pwrfile)
+		file, err = os.Open(fmt.Sprintf("%s/%s", loc, pwrfile))
+		if err != nil {
+			continue
+		} else {
+			defer file.Close()
+			scanner := bufio.NewScanner(file)
+			scanner.Scan()
+			num, _ := strconv.ParseFloat(scanner.Text(), 64)
+			// value is in microW
+			gpudata.PowCur = fmt.Sprintf("%.2fW", num/1000000.0)
+			file.Close()
+		}
 	}
+	// then get power cap
 	file, err = os.Open(fmt.Sprintf("%s/power1_cap_max", loc))
 	if err != nil {
 		gpudata.PowMax = "NA"
