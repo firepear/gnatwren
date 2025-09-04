@@ -237,7 +237,6 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	// first, try the places where current usage might be
 	gpudata.PowCur = "NA"
 	for _, pwrfile := range []string{"power1_input", "power1_average"} {
-		fmt.Printf("%s/%s\n", loc, pwrfile)
 		file, err = os.Open(fmt.Sprintf("%s/%s", loc, pwrfile))
 		if err != nil {
 			continue
