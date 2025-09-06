@@ -40,9 +40,6 @@ var (
 	gpumanu = ""
 	gpuname = ""
 	gpuloc  = ""
-
-	stowtick time.Timer
-	metrictick time.Timer
 )
 
 func gatherMetrics() ([]byte, error) {
@@ -176,25 +173,13 @@ func sendUndeliveredMetrics(pconf *pc.Config, c chan error) {
 
 func main() {
 	// find out where the gwagent config file is and read it in
-	var configfile = flag.String("config", "/etc/gnatwren/agent.json", "Location of the gwagent config file")
+	var configfile = flag.String("config", "/etc/gnatwren/gwagent-config.json", "Location of the gwagent config file")
 	var runonce = flag.Bool("once", false, "Gather data once, print to stdout, and exit")
+	var version = flag.Bool("version", false, "Print version to stdout")
 	flag.Parse()
 
-	// get machine architecture, OS, hostname, and gpu maker (plus
-	// other details, sometimes). these things are either
-	// irritating or expensive to fetch, so we do it here, once
-	arch = hwmon.Arch()
-	machos = hwmon.OS()
-	hostname, _ = os.Hostname()
-	gpumanu = hwmon.GpuManu()
-	if gpumanu != "nvidia" {
-		gpuname = hwmon.GpuName(gpumanu)
-		gpuloc = hwmon.GpuSysfsLoc()
-	}
-	// if we're in once-mode, nothing else needs to happen
-	if *runonce {
-		sample, _ := gatherMetrics()
-		fmt.Printf("%s\n", sample)
+	if *version {
+		fmt.Printf("gwagent %s\n", data.Ver)
 		os.Exit(0)
 	}
 
@@ -207,6 +192,24 @@ func main() {
 	err = json.Unmarshal(content, &config)
 	if err != nil {
 		log.Fatalf("can't parse config as JSON: %s; bailing", err)
+	}
+
+	// get machine architecture, OS, hostname, and gpu maker (plus
+	// other details, sometimes). these things are either
+	// irritating or expensive to fetch, so we do it here, once
+	arch = hwmon.Arch()
+	machos = hwmon.OS()
+	hostname, _ = os.Hostname()
+	gpumanu = hwmon.GpuManu()
+	if gpumanu != "nvidia" {
+		gpuname = hwmon.GpuName(gpumanu, config.Gpu)
+		gpuloc = hwmon.GpuSysfsLoc(config.Gpu)
+	}
+	// if we're in once-mode, nothing else needs to happen
+	if *runonce {
+		sample, _ := gatherMetrics()
+		fmt.Printf("%s\n", sample)
+		os.Exit(0)
 	}
 
 	// set up the things we need to pick our reporting intervals

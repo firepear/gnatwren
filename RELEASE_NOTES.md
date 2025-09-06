@@ -1,10 +1,12 @@
-## 0.20.0 (2025-08-xx)
+## 0.20.0 (2025-09-06)
 
-- Fixes for AMD GPUs
+- New config points for gather and webui (see README)
+- The default gwagent config file location has changed
+- Fixes to GPU handling, especially AMD GPUs
 - Added `-once` flag to gwagent, which is useful for testing (gathers
   metrics, dumps to stdout, and exits)
 - Updated for Petrel v0.40
-- Integrated logging with Petrel
+- Integrated logging with Petrel (mostly)
 - Updated echarts version for web UI
 
 ## 0.19.1 (2023-07-23)

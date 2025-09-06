@@ -21,87 +21,30 @@ Reporting of the following data is implemented:
 - GPU name, temperature, fan speed, and power stats (Nvidia and AMD; name for Intel)
 - Time since last check-in
 
-The following events are shown on the web status page:
+The web status page also displays:
 
 - CPU temperature
-  - Warning status if CPU over 80C
-  - Critical status if CPU over 90C
+  - Warning status if over configured value
+  - Critical status if over configured value
 - Last check-in
   - Critical status if more than 210s overdue
   - Warning if a node ceases to be present in current data
 
-## Visualization
-
-This screenshot shows some new-since v0.11.0 features: per-core clocks
-when hovering over the averaged clock, aa critical warning indicator
-for machines that have not checked in recently, and GPU data for
-Nvidia and AMD cards.
-
 ![wip viz](https://i.imgur.com/fWPAxVU.png)
 
-## Efficiency
 
-In my most recent check across my farm, over 5.5 days of runtime the
-client had used approximately 40 cpu-seconds on each node -- so a bit
-under 8 cpu-seconds per day on average. Memory usage was stable at
-approximately 8MB on an x86_64 system.
 
-The aggregator has been under much more frequent development, with
-large parts still be rewritten. I don't have solid statistics for it
-yet.
+# Configuration
 
-## Installation
+First, do `cp assets/*.json .`
 
-### gwgather via Docker
+This will create copies of the stock `gwgather` and `gwagent` config
+files which you can edit and use going forward.
 
-To build and launch a Docker container which runs `gwgather` and an
-instance of `nginx` for web monitoring, run `./build.sh` (via `sudo`
-if you're using `podman` without rootless containers).
+## gwgather
 
-Re-run the build script anytime. No monitoring data will be lost.
-
-The container has `busybox` and `sqlite` installed for diagnostics. If
-needed, attach with
-
-`docker exec -it gwgather ash`
-
-### gwagent via Ansible
-
-My Homefarm project contains a
-[playbook](https://github.com/firepear/homefarm/blob/main/gnatwren.yml)
-which will build gwagent and deploy it to a set of nodes.
-
-### Manual install
-
-#### gwgather
-
-Examining the build script and Dockerfile will show everything that is
-needed and how it's done. It's very straightforward and should be
-adaptable to any situation without much effort.
-
-#### gwagent
-
-- `go build ./cmd/gwagent`
-- `mv ./gwagent /usr/local/bin`
-- A systemd unit file for `gwagent` is at
-  `./assets/gnatwren-agent.service`
-  - It should be deployed according to systemd standards on the agent
-    nodes
-- A config file for `gwagent` is at `./assets/gwagent-config.json`
-  - Edit and deploy to `/etc/gnatwren/agent-config.json` on agent
-    nodes
-  - It must be readable by user `nobody`
-- On the agent nodes, create the directory `/var/run/gnatwren`, which
-  should be writable by `nobody`
-- Enable and start the `gnatwren-agent` service on agent nodes
-
-## Configuration
-
-### gwgather
-
-- `bind_addr`: The interface and port to bind to.Changing to
-  interfaces other than `0.0.0.0` may cause failures on startup within
-  Docker
+- `bind_addr`: The interface and port to bind to. Changing to
+  values other than `0.0.0.0` may cause failures on container startup
 - db
   - `location`: Path to the Gnatwren stats DB
   - `hours_retained`: How many hours of data to retain on an hourly
@@ -115,8 +58,12 @@ adaptable to any situation without much effort.
 - log
   - `file`: The file to write output to
   - `level`: Logging level ("fatal", "error", "conn", "debug")
+- ui (Web UI config)
+  - `title`: Title for stats page
+  - `temp_hi_cpu`: Temp at which to display the high warning for CPU
+  - `temp_crit_cpu`: Temp at which to display the critical warning for CPU
 
-### gwagent
+## gwagent
 
 - `gather_addr`: IP addr and port where the gather daemon is listening
 - `active`: No current function
@@ -124,3 +71,49 @@ adaptable to any situation without much effort.
   selected from after each report is made. The default set is the
   primes between 30 and 50, resulting in (on average) 1.51 updates per
   minute, while minimizing simultaneous updates
+- `gpu`: Specify which GPU to monitor, for non-Nvidia GPUs. Defaults
+  to empty string, which searches for the first defined GPU in the
+  system. Example: `card2` (as in `/sys/class/drm/card2`)
+- `workdir`: Directory where updates are stashed in the event of
+  network issues
+
+
+
+# Installation
+
+## gwgather via docker/podman
+
+To build and launch a container which runs `gwgather` and an instance
+of `nginx` for web monitoring, run `./build.sh` (via `sudo` if you're
+using `podman` without rootless containers). The build script will use
+the copy of the `gwgather` config file that you've edited, or it will
+create this copy if you haven't already.
+
+Re-run the build script anytime. No monitoring data will be lost.
+
+The container has `busybox` and `sqlite` installed for diagnostics. If
+needed, attach with `[docker|podman] exec -it gwgather ash`
+
+## Manual install
+
+### gwgather
+
+Examining the build script and Dockerfile will show everything that is
+needed and how it's done. It's very straightforward and should be
+adaptable to any situation without much effort.
+
+### gwagent
+
+- `go build ./cmd/gwagent`
+- `mv ./gwagent /usr/local/bin`
+  - Repeat this on any systems to be monitored
+- A systemd unit file for `gwagent` is at
+  `./assets/gnatwren-agent.service` and should be copied to
+  `/etc/systemd/system` on any systems to be monitored
+- Edit `agent-config.json` and then deploy it to `/etc/gnatwren/` on
+  all nodes to be monitoried
+  - It must be readable by user `nobody`
+- On all agent nodes, create the directory `/var/run/gnatwren`, which
+  should be writable by `nobody`
+- Enable and start the `gnatwren-agent` service on agent nodes
+  - You may need to do `sudo systemctl daemon-reload` first
