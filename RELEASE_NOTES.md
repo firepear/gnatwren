@@ -1,7 +1,8 @@
-## 0.20.0 (2025-09-xx)
+## 0.20.0 (2025-09-06)
 
 - New config points for gather and webui (see README)
-- Fixes for AMD GPUs
+- The default gwagent config file location has changed
+- Fixes to GPU handling, especially AMD GPUs
 - Added `-once` flag to gwagent, which is useful for testing (gathers
   metrics, dumps to stdout, and exits)
 - Updated for Petrel v0.40

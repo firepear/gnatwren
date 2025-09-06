@@ -92,9 +92,7 @@ create this copy if you haven't already.
 Re-run the build script anytime. No monitoring data will be lost.
 
 The container has `busybox` and `sqlite` installed for diagnostics. If
-needed, attach with
-
-`docker exec -it gwgather ash`
+needed, attach with `[docker|podman] exec -it gwgather ash`
 
 ## Manual install
 
