@@ -35,8 +35,10 @@ func GpuManu() string {
 
 // GpuName uses the pci.ids file to find the product name of a
 // GPU. This is not needed for Nvidia GPUs.
-func GpuName(manu string) string {
+func GpuName(manu, gpu string) string {
 	var rmanu, rmodel *regexp.Regexp
+	var err error
+	gpus := []string{fmt.Sprintf("/sys/class/drm/%s", gpu)}
 
 	// pci.ids is organized by manufacturer, keying off
 	// manufacturer id. manu section lines are the only lines
@@ -52,9 +54,11 @@ func GpuName(manu string) string {
 
 	// the other thing we need before starting is to look up our
 	// model id and construct a regexp from it
-	gpus, err := filepath.Glob("/sys/class/drm/card?")
-	if err != nil || len(gpus) == 0 {
-		return "NONE"
+	if gpu == "" {
+		gpus, err = filepath.Glob("/sys/class/drm/card?")
+		if err != nil || len(gpus) == 0 {
+			return "NONE"
+		}
 	}
 	modfile, err := os.Open(fmt.Sprintf("%s/device/device", gpus[0]))
 	if err != nil {
@@ -106,10 +110,14 @@ func GpuName(manu string) string {
 // GpuSysfsLoc looks through the /sys directory tree to find the hwmon
 // directory corresponding to the first GPU in a system. This is later
 // used by `Gpuinfo()`.
-func GpuSysfsLoc() string {
-	gpus, err := filepath.Glob("/sys/class/drm/card?")
-	if err != nil || len(gpus) == 0 {
-		return "NONE"
+func GpuSysfsLoc(gpu string) string {
+	var err error
+	gpus := []string{fmt.Sprintf("/sys/class/drm/%s", gpu)}
+	if gpu == "" {
+		gpus, err = filepath.Glob("/sys/class/drm/card?")
+		if err != nil || len(gpus) == 0 {
+			return "NONE"
+		}
 	}
 	gpus, err = filepath.Glob(fmt.Sprintf("%s/device/hwmon/*", gpus[0]))
 	if err != nil || len(gpus) == 0 {
@@ -219,7 +227,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	}
 	file, err = os.Open(fmt.Sprintf("%s/temp1_crit", loc))
 	if err != nil {
-		gpudata.TempMax = "NA"
+		gpudata.TempMax = "[NA]"
 	} else {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
@@ -232,7 +240,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	// power data
 	//
 	// first, try the places where current usage might be
-	gpudata.PowCur = "NA"
+	gpudata.PowCur = "[NA]"
 	for _, pwrfile := range []string{"power1_average", "power1_input"} {
 		file, err = os.Open(fmt.Sprintf("%s/%s", loc, pwrfile))
 		if err != nil {
@@ -250,7 +258,7 @@ func GpuinfoAMD(gpudata *data.GPUdata, loc string) {
 	// then get power cap
 	file, err = os.Open(fmt.Sprintf("%s/power1_cap", loc))
 	if err != nil {
-		gpudata.PowMax = "NA"
+		gpudata.PowMax = "[NA]"
 	} else {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
