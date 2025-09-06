@@ -85,7 +85,9 @@ files which you can edit and use going forward.
 
 To build and launch a container which runs `gwgather` and an instance
 of `nginx` for web monitoring, run `./build.sh` (via `sudo` if you're
-using `podman` without rootless containers).
+using `podman` without rootless containers). The build script will use
+the copy of the `gwgather` config file that you've edited, or it will
+create this copy if you haven't already.
 
 Re-run the build script anytime. No monitoring data will be lost.
 
@@ -106,14 +108,14 @@ adaptable to any situation without much effort.
 
 - `go build ./cmd/gwagent`
 - `mv ./gwagent /usr/local/bin`
+  - Repeat this on any systems to be monitored
 - A systemd unit file for `gwagent` is at
-  `./assets/gnatwren-agent.service`
-  - It should be deployed according to systemd standards on the agent
-    nodes
-- A config file for `gwagent` is at `./assets/gwagent-config.json`
-  - Edit and deploy to `/etc/gnatwren/agent-config.json` on agent
-    nodes
+  `./assets/gnatwren-agent.service` and should be copied to
+  `/etc/systemd/system` on any systems to be monitored
+- Edit `agent-config.json` and then deploy it to `/etc/gnatwren/` on
+  all nodes to be monitoried
   - It must be readable by user `nobody`
-- On the agent nodes, create the directory `/var/run/gnatwren`, which
+- On all agent nodes, create the directory `/var/run/gnatwren`, which
   should be writable by `nobody`
 - Enable and start the `gnatwren-agent` service on agent nodes
+  - You may need to do `sudo systemctl daemon-reload` first
